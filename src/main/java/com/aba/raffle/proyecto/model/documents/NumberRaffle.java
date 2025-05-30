@@ -1,13 +1,13 @@
 package com.aba.raffle.proyecto.model.documents;
 
-import com.aba.raffle.proyecto.model.enums.EstadoUsuario;
-import com.aba.raffle.proyecto.model.enums.Role;
+import com.aba.raffle.proyecto.model.enums.EstadoNumber;
+import com.aba.raffle.proyecto.model.vo.Buyer;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document("usuarios")
+@Document("numbers")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -15,16 +15,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 @ToString
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-public class User {
+public class NumberRaffle {
 
     @Id
     @EqualsAndHashCode.Include
-    private ObjectId id;
+    private String number;
 
-    private String name;
-    private String email;
-    private String password;
-    private Role role;
-    private EstadoUsuario estadoUsuario;
-    private String fechaRegistro;
+    private EstadoNumber stateNumber;
+    private Buyer buyer; //subdocumento del usuario que compra el numero
+    private ObjectId raffleId; //id de la rifa a la que pertenece el numero
+
 }

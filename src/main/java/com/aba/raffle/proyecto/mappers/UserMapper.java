@@ -7,12 +7,13 @@ import org.mapstruct.*;
 
 
 @Mapper(componentModel = "spring")
-public interface Usermaper {
+public interface UserMapper {
 
-    UserDTO toUserDTO(User user);
+    UserDTO toUserDTO(User user); //convierte User a UserDTO
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "estadoUsuario", constant = "INACTIVO")
+    @Mapping(target = "role", constant = "ROLE_ADMIN")
     @Mapping(target = "fechaRegistro", expression = "java(java.time.LocalDate.now().toString())")
-    User fromCreateUserDTO(UserCreateDTO userCreateDTO);
+    User fromCreateUserDTO(UserCreateDTO userCreateDTO); //convierte UserCreateDTO a User
 }

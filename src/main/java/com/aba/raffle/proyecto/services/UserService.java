@@ -6,4 +6,8 @@ import jakarta.validation.Valid;
 public interface UserService {
 
     void crearUser(UserCreateDTO userCreate) throws Exception;
+
+    void activarUser(@Valid String id) throws Exception;
+
+    void desactivarUsuer(@Valid String id) throws Exception;
 }
