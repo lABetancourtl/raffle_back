@@ -51,9 +51,4 @@ public class PurchaseServiceImpl implements PurchaseService {
         numberRepository.saveAll(randomNumbers);
     }
 
-    @Override
-    public List<NumberRaffle> obtenerNumerosPorEmail(String email) {
-        return numberRepository.findByBuyerEmail(email);
-    }
-
 }

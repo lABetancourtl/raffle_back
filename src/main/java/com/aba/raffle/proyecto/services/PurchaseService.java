@@ -8,6 +8,4 @@ import java.util.List;
 
 public interface PurchaseService {
     void comprarNumero(@Valid BuyRequestDTO buyRequestDTO);
-    List<NumberRaffle> obtenerNumerosPorEmail(String email);
-
 }

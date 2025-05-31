@@ -1,18 +1,23 @@
 package com.aba.raffle.proyecto.services.impl;
 
-import com.aba.raffle.proyecto.dto.RaffleCreateDTO;
+import com.aba.raffle.proyecto.dto.*;
 import com.aba.raffle.proyecto.mappers.RaffleMapper;
 import com.aba.raffle.proyecto.model.documents.NumberRaffle;
 import com.aba.raffle.proyecto.model.documents.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
+import com.aba.raffle.proyecto.model.vo.Buyer;
 import com.aba.raffle.proyecto.repositories.NumberRepository;
 import com.aba.raffle.proyecto.repositories.RaffleRepository;
 import com.aba.raffle.proyecto.services.RaffleService;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,5 +51,61 @@ public class RaffleServiceImpl implements RaffleService {
         // 3. Guardar todos los números en la colección numbers
         numberRepository.saveAll(numbers);
     }
+
+    @Override
+    public List<NumberRaffle> obtenerNumerosPorEmail(String email) {
+        return numberRepository.findByBuyerEmail(email);
+    }
+
+    @Override
+    public ResultadoBuyerDTO obtenerClientePorNumero(String numero) {
+        Optional<NumberRaffle> numberOpt = numberRepository.findByNumber(numero);
+
+        if (numberOpt.isEmpty()) {
+            return new ResultadoBuyerDTO("Número no existe", null);
+        }
+
+        NumberRaffle numberRaffle = numberOpt.get();
+
+        if (numberRaffle.getBuyer() == null) {
+            return new ResultadoBuyerDTO("Número aún no comprado", null);
+        }
+
+        Buyer buyer = numberRaffle.getBuyer();
+
+        BuyerDTO buyerDTO = new BuyerDTO(
+                buyer.getName() + " " + buyer.getApellido(),
+                buyer.getEmail(),
+                buyer.getPrefix() + " " + buyer.getPhone(),
+                buyer.getPais()
+        );
+
+        return new ResultadoBuyerDTO("Cliente encontrado", buyerDTO);
+    }
+
+    @Override
+    public void cambiarStateNumber(CambiarStateNumberDTO cambiarStateNumberDTO) {
+        NumberRaffle numberRaffle = numberRepository.findByNumber(cambiarStateNumberDTO.numero())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Número no encontrado"));
+
+        numberRaffle.setStateNumber(cambiarStateNumberDTO.nuevoEstado());
+        numberRepository.save(numberRaffle);
+    }
+
+    @Override
+    public List<NumberRaffle> obtenerNumerosPorEstado(EstadoNumber estado) {
+        List<NumberRaffle> numeros = numberRepository.findByStateNumber(estado);
+        return numeros;
+    }
+
+    @Override
+    public void cambiarStateRaffle(CambiarStateRaffleDTO cambiarStateRaffleDTO) {
+        ObjectId idRaffle = new ObjectId(cambiarStateRaffleDTO.id());
+        Raffle raffle = raffleRepository.findById(idRaffle).
+                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
+        raffle.setStateRaffle(cambiarStateRaffleDTO.nuevoEstado());
+        raffleRepository.save(raffle);
+    }
+
 
 }
