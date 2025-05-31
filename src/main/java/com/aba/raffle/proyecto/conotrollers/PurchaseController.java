@@ -4,9 +4,12 @@ import com.aba.raffle.proyecto.dto.BuyRequestDTO;
 import com.aba.raffle.proyecto.dto.MensajeDTO;
 import com.aba.raffle.proyecto.dto.UserCreateDTO;
 import com.aba.raffle.proyecto.model.documents.NumberRaffle;
+import com.aba.raffle.proyecto.model.enums.EstadoNumber;
+import com.aba.raffle.proyecto.repositories.NumberRepositoryCustomImpl;
 import com.aba.raffle.proyecto.services.PurchaseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +22,7 @@ import java.util.List;
 @RequestMapping("/api/purchase")
 public class PurchaseController {
     private final PurchaseService purchaseService;
+    private final NumberRepositoryCustomImpl numberRepository;
 
     @PostMapping("/comprarNumero")
     public ResponseEntity<MensajeDTO<String>> comprarNumero(@Valid @RequestBody BuyRequestDTO buyRequestDTO) throws Exception{
@@ -26,15 +30,15 @@ public class PurchaseController {
         return ResponseEntity.ok(new MensajeDTO<>(false,"Pago exitoso"));
     }
 
-    @GetMapping("/numerosPorEmail")
-    public ResponseEntity<List<NumberRaffle>> obtenerNumerosPorEmail(@RequestParam String email) {
-        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email no válido");
-        }
+//    @GetMapping("/cantidad-disponible")
+//    public ResponseEntity<MensajeDTO<Integer>> obtenerCantidadDisponible(@RequestParam String raffleId) {
+//        ObjectId raffleObjectId = new ObjectId(raffleId);
+//        int cantidadDisponible = numberRepository.findRandomAvailableNumbers(raffleObjectId, EstadoNumber.DISPONIBLE);
+//        return ResponseEntity.ok(new MensajeDTO<>(false, cantidadDisponible));
+//    }
 
-        List<NumberRaffle> numeros = purchaseService.obtenerNumerosPorEmail(email);
-        return ResponseEntity.ok(numeros);
-    }
+
+
 
 
 }

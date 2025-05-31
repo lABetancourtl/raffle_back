@@ -1,1 +1,10 @@
-El ususario con rol ROLE_ADMIN_ALL sera quien pase el EstadoUsuario de una cuenta de INACTIVO a ACTIVO,
+El ususario con rol ROLE_ADMIN_ALL sera quien pase el EstadoUsuario de una cuenta de INACTIVO a ACTIVO.
+
+Raffle y Number son documentos aparte en donde Raffle almacena los datos de la rifa como son: nombre, description, precio de la rifa, minimo de compra, numero de digitos de cada numero, Number tiene numero que a su ves es el id, estado (todos inician en DISPONIBLE) y cada numero tiene un campo raffleid que hace refencia a al id generado al crear una rifa
+
+
+TENER ENCUENTA CUANDO SE ESTE DESARROLLANDO EL FRONT:
+El cliete selecciona la cantidad de numeros que quiere comprar, esto lo enviara al panel donde el debe poner su datos, cuando de en el boton realizar pedido, se llamada a un endpoint que revisa cuantos numeros quedan con el estado DISPONIBLE, si es igual o mayor a la cantidad seleccionada, genera los numeros aleatoriamente y estos numeros pasan al estado resevado y se asigna el Buyer con los datos del cliente (esto para reservar los numeros a ese cliente por 10 ) cuando el pago es true, el esatdo pasa a VENDIDO.
+si el endpoint que revisa cuantos numeros quedan disponibbles ve que la cantidad selecionada es mayor a los diponibles, se le informa al cliente cuandos numeros quedan disponibles y si desea continuar la compra con la cantidad de disponibles
+
+
