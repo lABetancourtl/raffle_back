@@ -39,9 +39,11 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        .requestMatchers("/api/login/**").permitAll()
-                        .requestMatchers("/api/purchase/**").permitAll()
-                        .requestMatchers("/api/raffle/numerosPorEmail").permitAll()
+                        .requestMatchers("/api/login/**").permitAll()   //Login publico
+                        .requestMatchers("/api/purchase/**").permitAll()  //comprar rifa publico
+                        .requestMatchers("/api/raffle/numerosPorEmail").permitAll()  //buscar numero daddo un email publico
+                        .requestMatchers("/api/admin/crearUsuario").permitAll() //crear usuario publico solo por pruebas
+                        .requestMatchers("/api/raffle/activa").permitAll()  //busca la rifa activa
 
                         .anyRequest().authenticated()
                 )

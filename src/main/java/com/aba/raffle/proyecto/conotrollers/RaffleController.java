@@ -3,6 +3,7 @@ package com.aba.raffle.proyecto.conotrollers;
 
 import com.aba.raffle.proyecto.dto.*;
 import com.aba.raffle.proyecto.model.documents.NumberRaffle;
+import com.aba.raffle.proyecto.model.documents.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
 import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.services.RaffleService;
@@ -71,6 +72,20 @@ public class RaffleController {
         raffleService.cambiarStateRaffle(cambiarStateRaffleDTO);
         return ResponseEntity.ok(new MensajeDTO<>(false, "Estado cambiado correctamente"));
     }
+
+    @GetMapping("/allRifas")
+    public ResponseEntity<List<Raffle>> obtenerTodasLasRifas() {
+        List<Raffle> raffles = raffleService.obtenerTodasLasRifas();
+        return ResponseEntity.ok(raffles);
+    }
+
+    @GetMapping("/activa")
+    public ResponseEntity<Raffle> rifaActiva() {
+        Raffle raffle = raffleService.obtenerRifaActiva()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay rifa activa"));
+        return ResponseEntity.ok(raffle);
+    }
+
 
 
 }

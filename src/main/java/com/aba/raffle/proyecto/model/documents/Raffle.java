@@ -28,6 +28,7 @@ public class Raffle {
     private String description;     // descripcion de la rifa
     private String startdate;       // fecha de inicio de la rifa
     private String endDate;         // fecha de finalizacion de la rifa (finaliza cuando se vendan todos los numeros)
+    private String urlImagen;      //url de la imagen
     private EstadoRaffle stateRaffle;     // estado de la rifa (pendiente, en proceso, finalizada)
     private BigDecimal priceNumber; // precio de cada numero
     private int digitLength;        // numero de digitos de cada numero

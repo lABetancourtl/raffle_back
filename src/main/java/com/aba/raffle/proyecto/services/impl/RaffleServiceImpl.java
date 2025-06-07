@@ -5,6 +5,7 @@ import com.aba.raffle.proyecto.mappers.RaffleMapper;
 import com.aba.raffle.proyecto.model.documents.NumberRaffle;
 import com.aba.raffle.proyecto.model.documents.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
+import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.model.vo.Buyer;
 import com.aba.raffle.proyecto.repositories.NumberRepository;
 import com.aba.raffle.proyecto.repositories.RaffleRepository;
@@ -101,10 +102,34 @@ public class RaffleServiceImpl implements RaffleService {
     @Override
     public void cambiarStateRaffle(CambiarStateRaffleDTO cambiarStateRaffleDTO) {
         ObjectId idRaffle = new ObjectId(cambiarStateRaffleDTO.id());
-        Raffle raffle = raffleRepository.findById(idRaffle).
-                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
-        raffle.setStateRaffle(cambiarStateRaffleDTO.nuevoEstado());
+        Raffle raffle = raffleRepository.findById(idRaffle)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
+
+        EstadoRaffle nuevoEstado = cambiarStateRaffleDTO.nuevoEstado();
+
+        if (nuevoEstado == EstadoRaffle.ACTIVO) {
+            // Buscar si ya hay una rifa activa (que no sea la misma)
+            Optional<Raffle> rifaActiva = raffleRepository.findByStateRaffle(EstadoRaffle.ACTIVO);
+            if (rifaActiva.isPresent() && !rifaActiva.get().getId().equals(raffle.getId())) {
+                Raffle otraRifa = rifaActiva.get();
+                otraRifa.setStateRaffle(EstadoRaffle.PAUSA);
+                raffleRepository.save(otraRifa);
+            }
+        }
+
+        // Actualiza el estado de la rifa actual
+        raffle.setStateRaffle(nuevoEstado);
         raffleRepository.save(raffle);
+    }
+
+    @Override
+    public List<Raffle> obtenerTodasLasRifas() {
+        return raffleRepository.findAll();
+    }
+
+    @Override
+    public Optional<Raffle> obtenerRifaActiva() {
+        return raffleRepository.findByStateRaffle(EstadoRaffle.ACTIVO);
     }
 
 

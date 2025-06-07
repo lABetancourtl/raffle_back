@@ -12,6 +12,9 @@ import java.math.BigDecimal;
 public record RaffleCreateDTO(
 
         @NotBlank
+        String urlImagen,
+
+        @NotBlank
         String nameRaffle,
 
         @NotBlank
