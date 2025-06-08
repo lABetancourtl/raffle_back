@@ -129,8 +129,37 @@ public class RaffleServiceImpl implements RaffleService {
 
     @Override
     public Optional<Raffle> obtenerRifaActiva() {
-        return raffleRepository.findByStateRaffle(EstadoRaffle.ACTIVO);
+        Optional<Raffle> raffleOpt = raffleRepository.findByStateRaffle(EstadoRaffle.ACTIVO);
+
+        if (raffleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Raffle raffle = raffleOpt.get();
+        ObjectId idRaffle = raffle.getId(); // <-- usa el ObjectId real
+
+        // Obtenemos los números vendidos de esa rifa
+        List<NumberRaffle> numeros = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, idRaffle);
+        int numerosVendidos = numeros.size();
+
+        System.out.println(numerosVendidos);
+
+        // Calculamos el total de números posibles según los dígitos
+        int totalNumerosPosibles = (int) Math.pow(10, raffle.getDigitLength());
+
+        // Calculamos el porcentaje vendido (evitar división por cero)
+        int porcentajeVendidos = totalNumerosPosibles > 0
+                ? (numerosVendidos * 100) / totalNumerosPosibles
+                : 0;
+
+        // Asignamos el valor al campo @Transient
+        raffle.setPorcentajeVendidos(porcentajeVendidos);
+
+        return Optional.of(raffle);
     }
+
+
+
 
 
 }

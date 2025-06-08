@@ -2,9 +2,11 @@ package com.aba.raffle.proyecto.model.documents;
 
 
 import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -34,4 +36,11 @@ public class Raffle {
     private int digitLength;        // numero de digitos de cada numero
     private int minPurchase;        // minimo de compra para que pueda venderse
 
+    @Transient
+    private int porcentajeVendidos;
+
+    @JsonProperty("id")
+    public String getIdString() {
+        return id != null ? id.toHexString() : null;
+    }
 }

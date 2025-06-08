@@ -43,7 +43,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/purchase/**").permitAll()  //comprar rifa publico
                         .requestMatchers("/api/raffle/numerosPorEmail").permitAll()  //buscar numero daddo un email publico
                         .requestMatchers("/api/admin/crearUsuario").permitAll() //crear usuario publico solo por pruebas
-                        .requestMatchers("/api/raffle/activa").permitAll()  //busca la rifa activa
+                        .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
 
                         .anyRequest().authenticated()
                 )
@@ -56,7 +56,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*")); // Origen FRONT
+        config.setAllowedOriginPatterns(List.of("http://localhost:4200")); // Si usas Angular // Origen FRONT
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
