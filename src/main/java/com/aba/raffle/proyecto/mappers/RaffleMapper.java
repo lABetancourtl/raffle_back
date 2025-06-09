@@ -12,7 +12,7 @@ public interface RaffleMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "startdate", expression = "java(java.time.LocalDate.now().toString())")
-    @Mapping(target = "stateRaffle", constant = "ACTIVO")
+    @Mapping(target = "stateRaffle", constant = "PAUSA")
     Raffle fromCreateRaffleDTO(RaffleCreateDTO raffleCreateDTO); //convierte RaffleCreateDTO a Raffle
 
 }

@@ -5,6 +5,7 @@ import com.aba.raffle.proyecto.mappers.RaffleMapper;
 import com.aba.raffle.proyecto.model.documents.NumberRaffle;
 import com.aba.raffle.proyecto.model.documents.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
+import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.model.vo.Buyer;
 import com.aba.raffle.proyecto.repositories.NumberRepository;
 import com.aba.raffle.proyecto.repositories.RaffleRepository;
@@ -18,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -101,11 +103,69 @@ public class RaffleServiceImpl implements RaffleService {
     @Override
     public void cambiarStateRaffle(CambiarStateRaffleDTO cambiarStateRaffleDTO) {
         ObjectId idRaffle = new ObjectId(cambiarStateRaffleDTO.id());
-        Raffle raffle = raffleRepository.findById(idRaffle).
-                orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
-        raffle.setStateRaffle(cambiarStateRaffleDTO.nuevoEstado());
+        Raffle raffle = raffleRepository.findById(idRaffle)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
+
+        EstadoRaffle nuevoEstado = cambiarStateRaffleDTO.nuevoEstado();
+
+        if (nuevoEstado == EstadoRaffle.ACTIVO) {
+            // Buscar si ya hay una rifa activa (que no sea la misma)
+            Optional<Raffle> rifaActiva = raffleRepository.findByStateRaffle(EstadoRaffle.ACTIVO);
+            if (rifaActiva.isPresent() && !rifaActiva.get().getId().equals(raffle.getId())) {
+                Raffle otraRifa = rifaActiva.get();
+                otraRifa.setStateRaffle(EstadoRaffle.PAUSA);
+                raffleRepository.save(otraRifa);
+            }
+        }
+
+        // Actualiza el estado de la rifa actual
+        raffle.setStateRaffle(nuevoEstado);
         raffleRepository.save(raffle);
     }
+
+    @Override
+    public List<Raffle> obtenerTodasLasRifas() {
+        return raffleRepository.findAll();
+    }
+
+    @Override
+    public Optional<Raffle> obtenerRifaActiva() {
+        Optional<Raffle> raffleOpt = raffleRepository.findByStateRaffle(EstadoRaffle.ACTIVO);
+
+        if (raffleOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Raffle raffle = raffleOpt.get();
+        ObjectId idRaffle = raffle.getId(); // <-- usa el ObjectId real
+
+        // Obtenemos los números vendidos de esa rifa
+        List<NumberRaffle> numeros = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, idRaffle);
+        int numerosVendidos = numeros.size();
+
+
+        // Calculamos el total de números posibles según los dígitos
+        int totalNumerosPosibles = (int) Math.pow(10, raffle.getDigitLength());
+
+        // Calculamos el porcentaje vendido (evitar división por cero)
+        int porcentajeVendidos = totalNumerosPosibles > 0
+                ? (numerosVendidos * 100) / totalNumerosPosibles
+                : 0;
+
+        // Asignamos el valor al campo @Transient
+        raffle.setPorcentajeVendidos(porcentajeVendidos);
+
+        return Optional.of(raffle);
+    }
+
+    @Override
+    public List<String> obtenerSoloNumerosPorEmail(String email) {
+        return numberRepository.findByBuyerEmail(email)
+                .stream()
+                .map(NumberRaffle::getNumber)
+                .collect(Collectors.toList());
+    }
+
 
 
 }

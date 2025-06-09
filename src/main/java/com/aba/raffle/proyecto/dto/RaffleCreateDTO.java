@@ -12,17 +12,17 @@ import java.math.BigDecimal;
 public record RaffleCreateDTO(
 
         @NotBlank
+        String urlImagen,
+
+        @NotBlank
         String nameRaffle,
 
         @NotBlank
         String description,
 
         @NotNull
-        EstadoRaffle stateRaffle,
-
-        @NotNull
         @Min(value = 0, message = "El precio debe ser positivo")
-        BigDecimal pricePerNumber,
+        BigDecimal priceNumber,
 
         @Min(value = 1, message = "La compra mínima debe ser al menos 1")
         int          minPurchase,
