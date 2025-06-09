@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -142,7 +143,6 @@ public class RaffleServiceImpl implements RaffleService {
         List<NumberRaffle> numeros = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, idRaffle);
         int numerosVendidos = numeros.size();
 
-        System.out.println(numerosVendidos);
 
         // Calculamos el total de números posibles según los dígitos
         int totalNumerosPosibles = (int) Math.pow(10, raffle.getDigitLength());
@@ -158,7 +158,13 @@ public class RaffleServiceImpl implements RaffleService {
         return Optional.of(raffle);
     }
 
-
+    @Override
+    public List<String> obtenerSoloNumerosPorEmail(String email) {
+        return numberRepository.findByBuyerEmail(email)
+                .stream()
+                .map(NumberRaffle::getNumber)
+                .collect(Collectors.toList());
+    }
 
 
 

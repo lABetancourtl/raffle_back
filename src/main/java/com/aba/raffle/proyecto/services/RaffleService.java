@@ -26,4 +26,6 @@ public interface RaffleService {
     List<Raffle> obtenerTodasLasRifas();
 
     Optional<Raffle> obtenerRifaActiva();
+
+    List<String> obtenerSoloNumerosPorEmail(String email);
 }

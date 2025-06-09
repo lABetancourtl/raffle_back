@@ -41,7 +41,8 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/login/**").permitAll()   //Login publico
                         .requestMatchers("/api/purchase/**").permitAll()  //comprar rifa publico
-                        .requestMatchers("/api/raffle/numerosPorEmail").permitAll()  //buscar numero daddo un email publico
+                        .requestMatchers("/api/raffle/numerosPorEmail").permitAll()  //buscar numero daddo un email y rtorna los datos de la compra
+                        .requestMatchers("/api/raffle/numerosPorEmail/soloNumeros").permitAll()  //buscar numero daddo un email solo retorna los numeros (publico)
                         .requestMatchers("/api/admin/crearUsuario").permitAll() //crear usuario publico solo por pruebas
                         .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
 

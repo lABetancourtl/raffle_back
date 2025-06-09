@@ -39,6 +39,16 @@ public class RaffleController {
         return ResponseEntity.ok(numeros);
     }
 
+    @GetMapping("/numerosPorEmail/soloNumeros")
+    public ResponseEntity<List<String>> obtenerSoloNumerosPorEmail(@RequestParam String email) {
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email no válido");
+        }
+        List<String> numeros = raffleService.obtenerSoloNumerosPorEmail(email);
+        return ResponseEntity.ok(numeros);
+    }
+
+
     @GetMapping("/clientePorNumero")
     public ResponseEntity<MensajeDTO<ResultadoBuyerDTO>> obtenerClientePorNumero(@Valid @RequestParam String numero) throws Exception{
         if (!numero.matches("^[0-9]{1,4}$")) {
