@@ -80,6 +80,7 @@ public class RaffleController {
     @PatchMapping("/cambiarEstadoRifa")
     public ResponseEntity<MensajeDTO<String>> cambiarStateRaffle(@Valid @RequestBody CambiarStateRaffleDTO cambiarStateRaffleDTO) throws Exception{
         raffleService.cambiarStateRaffle(cambiarStateRaffleDTO);
+
         return ResponseEntity.ok(new MensajeDTO<>(false, "Estado cambiado correctamente"));
     }
 
