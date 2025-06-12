@@ -46,6 +46,8 @@ public class RaffleServiceImpl implements RaffleService {
                     .stateNumber(EstadoNumber.DISPONIBLE)
                     .buyer(null)
                     .raffleId(raffle.getId())
+                    .paymentSessionId(null)
+                    .reservedAt(null)
                     .build();
             numbers.add(numberRaffle);
         }

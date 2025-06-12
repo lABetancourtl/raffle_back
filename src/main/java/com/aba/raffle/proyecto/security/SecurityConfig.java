@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/raffle/numerosPorEmail/soloNumeros").permitAll()  //buscar numero daddo un email solo retorna los numeros (publico)
                         .requestMatchers("/api/admin/crearUsuario").permitAll() //crear usuario publico solo por pruebas
                         .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
+                        .requestMatchers("/api/purchase/cantidadNumerosDisponibles").permitAll() //cantidad numeros disponibles al momento de querer hacer el pago
 
                         .anyRequest().authenticated()
                 )

@@ -12,6 +12,7 @@ import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +50,15 @@ public class PurchaseServiceImpl implements PurchaseService {
         });
 
         numberRepository.saveAll(randomNumbers);
+    }
+
+    @Override
+    public Optional<Integer> obtenerCantidadNumerosDisponibles(String idRaffle) {
+        ObjectId raffleObjectId = new ObjectId(idRaffle);
+        List<NumberRaffle> numerosDisponibles = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.DISPONIBLE, raffleObjectId);
+        Optional<Integer> cantidadNumerosDisponibles = Optional.of(numerosDisponibles.size());
+        System.out.println(cantidadNumerosDisponibles);
+        return cantidadNumerosDisponibles;
     }
 
 }
