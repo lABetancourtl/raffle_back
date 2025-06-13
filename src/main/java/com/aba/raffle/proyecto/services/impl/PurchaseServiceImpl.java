@@ -57,7 +57,6 @@ public class PurchaseServiceImpl implements PurchaseService {
         ObjectId raffleObjectId = new ObjectId(idRaffle);
         List<NumberRaffle> numerosDisponibles = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.DISPONIBLE, raffleObjectId);
         Optional<Integer> cantidadNumerosDisponibles = Optional.of(numerosDisponibles.size());
-        System.out.println(cantidadNumerosDisponibles);
         return cantidadNumerosDisponibles;
     }
 
