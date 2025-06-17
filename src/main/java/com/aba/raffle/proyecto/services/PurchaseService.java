@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PurchaseService {
-    void comprarNumero(@Valid BuyRequestDTO buyRequestDTO);
+    void comprarNumero(@Valid BuyRequestDTO buyRequestDTO, String externalReference);
 
     Optional<Integer> obtenerCantidadNumerosDisponibles(@Valid String idRaffle);
 }

@@ -20,7 +20,7 @@ public class PurchaseController {
 
     @PostMapping("/comprarNumero")
     public ResponseEntity<MensajeDTO<String>> comprarNumero(@Valid @RequestBody BuyRequestDTO buyRequestDTO) throws Exception{
-        purchaseService.comprarNumero(buyRequestDTO);
+        purchaseService.comprarNumero(buyRequestDTO, null);
         return ResponseEntity.ok(new MensajeDTO<>(false,"Pago exitoso"));
     }
     @GetMapping("/cantidadNumerosDisponibles")

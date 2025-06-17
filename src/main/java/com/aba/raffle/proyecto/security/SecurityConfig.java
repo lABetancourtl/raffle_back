@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
                         .requestMatchers("/api/purchase/cantidadNumerosDisponibles").permitAll() //cantidad numeros disponibles al momento de querer hacer el pago
                         .requestMatchers("/api/mercadopago/crear-preferencia").permitAll()
+                        .requestMatchers("/api/mercadopago/webhook").permitAll()
+                        .requestMatchers("/api/mercadopago/procesar-pago").permitAll()
 
                         .anyRequest().authenticated()
                 )

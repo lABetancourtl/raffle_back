@@ -1,5 +1,12 @@
 package com.aba.raffle.proyecto.services;
 
+import com.aba.raffle.proyecto.dto.PagoRequestDTO;
+
+import java.util.Map;
+
 public interface MercadoPagoService {
-    String crearPreferenciaPago(String descripcion, int cantidad, double precio, String email) throws Exception;
+
+    void procesarPago(Map<String, Object> payload);
+
+    Map<String, String> iniciarProcesoDePago(PagoRequestDTO datosPago) throws Exception;
 }

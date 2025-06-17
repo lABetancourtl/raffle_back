@@ -1,6 +1,7 @@
 package com.aba.raffle.proyecto.conotrollers;
 
 
+import com.aba.raffle.proyecto.dto.PagoRequestDTO;
 import com.aba.raffle.proyecto.services.MercadoPagoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,13 +17,19 @@ public class MercadoPagoContoller {
     private final MercadoPagoService mercadoPagoService;
 
     @PostMapping("/crear-preferencia")
-    public Map<String, String> crearPreferencia(@RequestBody Map<String, Object> payload) throws Exception {
-        String descripcion = (String) payload.get("descripcion");
-        int cantidad = (int) payload.get("cantidad");
-        double precio = Double.parseDouble(payload.get("precio").toString());
-        String email = (String) payload.get("email");
-
-        String preferenceId = mercadoPagoService.crearPreferenciaPago(descripcion, cantidad, precio, email);
-        return Map.of("preferenceId", preferenceId);
+    public ResponseEntity<Map<String, String>> crearPreferencia(@RequestBody PagoRequestDTO datosPago) throws Exception {
+        Map<String, String> respuesta = mercadoPagoService.iniciarProcesoDePago(datosPago);
+        return ResponseEntity.ok(respuesta);
     }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<String> recibirWebhook(@RequestBody Map<String, Object> payload) {
+        System.out.println("Webhook recibido: " + payload);
+        mercadoPagoService.procesarPago(payload);
+        return ResponseEntity.ok("Webhook recibido");
+    }
+
+
+
+
 }

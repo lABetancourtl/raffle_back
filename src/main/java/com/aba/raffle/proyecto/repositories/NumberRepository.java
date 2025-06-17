@@ -16,5 +16,6 @@ public interface NumberRepository extends MongoRepository<NumberRaffle, ObjectId
     List<NumberRaffle> findByStateNumber(EstadoNumber estado);
     Optional<NumberRaffle> findByNumber(String number);
     List<NumberRaffle> findByStateNumberAndRaffleId(EstadoNumber estado, ObjectId raffleId);
+    List<NumberRaffle> findByPaymentSessionId(String paymentSessionId);
 
 }
