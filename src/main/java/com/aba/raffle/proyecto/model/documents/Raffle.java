@@ -35,6 +35,7 @@ public class Raffle {
     private BigDecimal priceNumber; // precio de cada numero
     private int digitLength;        // numero de digitos de cada numero
     private int minPurchase;        // minimo de compra para que pueda venderse
+    private List<Integer> paquetes;
 
     @Transient
     private int porcentajeVendidos;

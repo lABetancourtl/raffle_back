@@ -1,13 +1,16 @@
 package com.aba.raffle.proyecto.services.impl;
 
 import com.aba.raffle.proyecto.dto.*;
+import com.aba.raffle.proyecto.mappers.PaymentOperationMapper;
 import com.aba.raffle.proyecto.mappers.RaffleMapper;
 import com.aba.raffle.proyecto.model.documents.NumberRaffle;
+import com.aba.raffle.proyecto.model.documents.PaymentOperation;
 import com.aba.raffle.proyecto.model.documents.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
 import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.model.vo.Buyer;
 import com.aba.raffle.proyecto.repositories.NumberRepository;
+import com.aba.raffle.proyecto.repositories.PaymentOperationRepository;
 import com.aba.raffle.proyecto.repositories.RaffleRepository;
 import com.aba.raffle.proyecto.services.RaffleService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,8 @@ public class RaffleServiceImpl implements RaffleService {
     private final RaffleRepository raffleRepository;
     private final RaffleMapper raffleMapper;
     private final NumberRepository numberRepository;
+    private final PaymentOperationRepository paymentOperationRepository;
+    private final PaymentOperationMapper paymentOperationMapper;
 
 
     @Override
@@ -35,8 +40,8 @@ public class RaffleServiceImpl implements RaffleService {
         Raffle raffle = raffleMapper.fromCreateRaffleDTO(raffleCreate);
         raffleRepository.save(raffle); // aquí raffle ya tiene su ID generado
 
-        // 2. Calcular cantidad total de números (10^digitLength)
-        int digitLength = raffleCreate.digitLength();
+        // 2. Calcular cantidad total de números (10^digitLength)https://3dc8-152-202-206-54.ngrok-free.app
+        int digitLength = raffle.getDigitLength();
         int totalNumbers = (int) Math.pow(10, digitLength);
         List<NumberRaffle> numbers = new ArrayList<>(totalNumbers);
         for (int i = 0; i < totalNumbers; i++) {
@@ -166,6 +171,13 @@ public class RaffleServiceImpl implements RaffleService {
                 .stream()
                 .map(NumberRaffle::getNumber)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<PaymentOperationDTO> getOperacionesByRaffle(String raffleId) {
+        List<PaymentOperation> operaciones = paymentOperationRepository.findByRaffleId(raffleId);
+        List<PaymentOperationDTO> listaOperationes = paymentOperationMapper.toDtoList(operaciones);
+        return listaOperationes;
     }
 
 

@@ -31,8 +31,8 @@ public class PurchaseServiceImpl implements PurchaseService {
                 EstadoNumber.DISPONIBLE,
                 buyRequestDTO.quantity()
         );
-        System.out.println("Cantidad que llega desde el front: "+ buyRequestDTO.quantity());
-        System.out.println("Lista de numeros disponibles random: "+randomNumbers);
+//        System.out.println("Cantidad que llega desde el front: "+ buyRequestDTO.quantity());
+//        System.out.println("Lista de numeros disponibles random: "+randomNumbers);
 
         if (randomNumbers.size() < buyRequestDTO.quantity()) {
             throw new RuntimeException("No hay suficientes números disponibles");

@@ -1,7 +1,6 @@
 package com.aba.raffle.proyecto.repositories;
 
 import com.aba.raffle.proyecto.model.documents.Raffle;
-import com.aba.raffle.proyecto.model.documents.User;
 import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;

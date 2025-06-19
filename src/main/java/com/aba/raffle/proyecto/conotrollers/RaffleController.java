@@ -5,7 +5,6 @@ import com.aba.raffle.proyecto.dto.*;
 import com.aba.raffle.proyecto.model.documents.NumberRaffle;
 import com.aba.raffle.proyecto.model.documents.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
-import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.services.RaffleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -95,6 +94,12 @@ public class RaffleController {
         Raffle raffle = raffleService.obtenerRifaActiva()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay rifa activa"));
         return ResponseEntity.ok(raffle);
+    }
+
+    @GetMapping("/operaciones/{raffleId}")
+    public ResponseEntity<List<PaymentOperationDTO>> getOperacionesByRaffle(@PathVariable String raffleId) {
+        List<PaymentOperationDTO> operaciones = raffleService.getOperacionesByRaffle(raffleId);
+        return ResponseEntity.ok(operaciones);
     }
 
 
