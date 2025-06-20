@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -65,7 +66,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 .items(List.of(item))
                 .payer(payer)
                 .externalReference(externalReference)
-                .notificationUrl("https://3dc8-152-202-206-54.ngrok-free.app/api/mercadopago/webhook")
+                .notificationUrl("https://fb12-152-202-206-54.ngrok-free.app/api/mercadopago/webhook")
                 .backUrls(PreferenceBackUrlsRequest.builder()
                         .success("https://tuapp.com/pago-exitoso")
                         .failure("https://tuapp.com/pago-fallido")
@@ -93,7 +94,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 PaymentClient paymentClient = new PaymentClient();
                 Payment payment = paymentClient.get(Long.parseLong(id.toString()));
 
-                // Extraer datos
+                // Datos del pago
                 String status = payment.getStatus();
                 String email = payment.getPayer().getEmail();
                 double monto = payment.getTransactionAmount().doubleValue();
@@ -104,10 +105,10 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                         ? payment.getDateApproved().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()
                         : LocalDateTime.now();
 
-                // Buscar números reservados por externalReference
+                // Buscar números asociados
                 List<NumberRaffle> numeros = numberRepository.findByPaymentSessionId(externalReference);
 
-                // Guardar operación
+                // Preparar operación
                 PaymentOperation op = new PaymentOperation();
                 op.setPaymentId(payment.getId().toString());
                 op.setStatus(status);
@@ -117,32 +118,61 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 op.setFechaPago(fecha);
                 op.setExternalReference(externalReference);
                 op.setCompradorEmail(email);
-
-                if (!numeros.isEmpty()) {
-                    NumberRaffle n = numeros.get(0);
-                    op.setRaffleId(n.getRaffleId().toString());
-                    op.setCantidadNumeros(numeros.size());
-                    op.setNumerosComprados(numeros.stream().map(NumberRaffle::getNumber).toList());
-
-                    // Intentar extraer más datos del comprador (si estaban guardados)
-                    op.setCompradorNombre(n.getBuyer() != null ? n.getBuyer().getName() : null);
-                    op.setCompradorApellido(n.getBuyer() != null ? n.getBuyer().getApellido() : null);
-                    op.setCompradorPais(n.getBuyer() != null ? n.getBuyer().getPais() : null);
-                    op.setCompradorTelefono(n.getBuyer() != null ? n.getBuyer().getPhone() : null);
-                }
-
                 op.setRawPayload(payload.toString());
                 op.setRegistradoEn(LocalDateTime.now());
 
+                if (numeros.isEmpty()) {
+                    System.out.println("❌ No se encontraron números asociados a: " + externalReference);
+                    op.setExpirada(true);
+                    paymentOperationRepository.save(op);
+                    return;
+                }
+
+                NumberRaffle primerNumero = numeros.get(0);
+                LocalDateTime reservedAt = primerNumero.getReservedAt();
+
+                if (reservedAt == null || reservedAt.isBefore(LocalDateTime.now().minusMinutes(1))) {
+                    System.out.println("❌ La reserva expiró. Liberando números.");
+
+                    op.setExpirada(true);
+                    op.setRaffleId(primerNumero.getRaffleId().toString());
+                    op.setCantidadNumeros(numeros.size());
+
+                    if (primerNumero.getBuyer() != null) {
+                        op.setCompradorNombre(primerNumero.getBuyer().getName());
+                        op.setCompradorApellido(primerNumero.getBuyer().getApellido());
+                        op.setCompradorPais(primerNumero.getBuyer().getPais());
+                        op.setCompradorTelefono(primerNumero.getBuyer().getPhone());
+                    }
+
+                    liberarNumeros(numeros);
+                    paymentOperationRepository.save(op);
+                    return;
+                }
+
+                // La reserva aún es válida
+                op.setExpirada(false);
+                op.setRaffleId(primerNumero.getRaffleId().toString());
+                op.setCantidadNumeros(numeros.size());
+                op.setNumerosComprados(numeros.stream().map(NumberRaffle::getNumber).toList());
+
+                if (primerNumero.getBuyer() != null) {
+                    op.setCompradorNombre(primerNumero.getBuyer().getName());
+                    op.setCompradorApellido(primerNumero.getBuyer().getApellido());
+                    op.setCompradorPais(primerNumero.getBuyer().getPais());
+                    op.setCompradorTelefono(primerNumero.getBuyer().getPhone());
+                }
+
                 paymentOperationRepository.save(op);
 
-                // Actualizar estado si es aprobado
                 if ("approved".equalsIgnoreCase(status)) {
                     for (NumberRaffle numero : numeros) {
                         numero.setStateNumber(EstadoNumber.VENDIDO);
                         numero.setReservedAt(LocalDateTime.now());
                     }
                     numberRepository.saveAll(numeros);
+                } else {
+                    liberarNumeros(numeros);
                 }
 
             } catch (Exception e) {
@@ -150,6 +180,19 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
             }
         }
     }
+
+
+    private void liberarNumeros(List<NumberRaffle> numeros) {
+        for (NumberRaffle numero : numeros) {
+            numero.setStateNumber(EstadoNumber.DISPONIBLE);
+            numero.setBuyer(null);
+            numero.setReservedAt(null);
+            numero.setPaymentSessionId(null);
+        }
+        numberRepository.saveAll(numeros);
+        System.out.println("🔁 Números liberados correctamente por pago no aprobado o expiración.");
+    }
+
 
     @Override
     public Map<String, String> iniciarProcesoDePago(PagoRequestDTO datosPago) throws Exception {
@@ -167,6 +210,26 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 datosPago.email(),
                 externalReference
         );
+    }
+
+    @Scheduled(fixedRate = 60000) // cada 1 minuto
+    public void liberarReservasVencidas() {
+        LocalDateTime hace10Min = LocalDateTime.now().minusMinutes(3);
+        List<NumberRaffle> vencidos = numberRepository.findByStateNumberAndReservedAtBefore(
+                EstadoNumber.RESERVADO, hace10Min
+        );
+
+        for (NumberRaffle numero : vencidos) {
+            numero.setStateNumber(EstadoNumber.DISPONIBLE);
+            numero.setBuyer(null);
+            numero.setReservedAt(null);
+            numero.setPaymentSessionId(null);
+        }
+
+        if (!vencidos.isEmpty()) {
+            numberRepository.saveAll(vencidos);
+            System.out.println("⏰ Reservas expiradas liberadas: " + vencidos.size());
+        }
     }
 
 

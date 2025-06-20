@@ -48,4 +48,7 @@ public class PaymentOperation {
     private String rawPayload; // todo el JSON que llegó por webhook, por si acaso
     private LocalDateTime registradoEn; // cuándo se registró esta operación
 
+    private boolean expirada;
+
+
 }

@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,4 +19,5 @@ public interface NumberRepository extends MongoRepository<NumberRaffle, ObjectId
     List<NumberRaffle> findByStateNumberAndRaffleId(EstadoNumber estado, ObjectId raffleId);
     List<NumberRaffle> findByPaymentSessionId(String paymentSessionId);
 
+    List<NumberRaffle> findByStateNumberAndReservedAtBefore(EstadoNumber estadoNumber, LocalDateTime hace10Min);
 }

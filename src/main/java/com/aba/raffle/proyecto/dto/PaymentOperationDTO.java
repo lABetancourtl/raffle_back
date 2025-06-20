@@ -16,6 +16,7 @@ public record PaymentOperationDTO(
         String compradorEmail,
         String raffleId,
         int cantidadNumeros,
-        List<String> numerosComprados
+        List<String> numerosComprados,
+        boolean expirada
 ) {}
 

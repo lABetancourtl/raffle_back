@@ -17,7 +17,7 @@ public class MercadoPagoContoller {
     private final MercadoPagoService mercadoPagoService;
 
     @PostMapping("/crear-preferencia")
-    public ResponseEntity<Map<String, String>> crearPreferencia(@RequestBody PagoRequestDTO datosPago) throws Exception {
+    public ResponseEntity<Map<String, String>> iniciarProcesoPago(@RequestBody PagoRequestDTO datosPago) throws Exception {
         Map<String, String> respuesta = mercadoPagoService.iniciarProcesoDePago(datosPago);
         return ResponseEntity.ok(respuesta);
     }
