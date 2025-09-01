@@ -1,15 +1,15 @@
 package com.aba.raffle.proyecto.repositories;
 
-import com.aba.raffle.proyecto.model.documents.Raffle;
-import com.aba.raffle.proyecto.model.documents.User;
+import com.aba.raffle.proyecto.model.entities.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface RaffleRepository extends MongoRepository<Raffle, ObjectId> {
+public interface RaffleRepository extends JpaRepository<Raffle, Long> {
+
     Optional<Raffle> findByStateRaffle(EstadoRaffle stateRaffle);
+
 }

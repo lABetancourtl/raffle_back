@@ -1,11 +1,8 @@
 package com.aba.raffle.proyecto.services;
 
-import com.aba.raffle.proyecto.dto.CambiarStateNumberDTO;
-import com.aba.raffle.proyecto.dto.CambiarStateRaffleDTO;
-import com.aba.raffle.proyecto.dto.RaffleCreateDTO;
-import com.aba.raffle.proyecto.dto.ResultadoBuyerDTO;
-import com.aba.raffle.proyecto.model.documents.NumberRaffle;
-import com.aba.raffle.proyecto.model.documents.Raffle;
+import com.aba.raffle.proyecto.dto.*;
+import com.aba.raffle.proyecto.model.entities.NumberRaffle;
+import com.aba.raffle.proyecto.model.entities.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
 import jakarta.validation.Valid;
 
@@ -27,5 +24,7 @@ public interface RaffleService {
 
     Optional<Raffle> obtenerRifaActiva();
 
-    List<String> obtenerSoloNumerosPorEmail(String email);
+    List<NumeroDTO> obtenerSoloNumerosPorEmail(String email);
+
+    List<PaymentOperationDTO> getOperacionesByRaffle(String raffleId);
 }

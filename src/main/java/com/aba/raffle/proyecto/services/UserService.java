@@ -7,7 +7,10 @@ public interface UserService {
 
     void crearUser(UserCreateDTO userCreate) throws Exception;
 
-    void activarUser(@Valid String id) throws Exception;
+    void activarUser(@Valid Long id) throws Exception;
 
-    void desactivarUsuer(@Valid String id) throws Exception;
+
+    void desactivarUsuer(@Valid Long id) throws Exception;
+
+
 }

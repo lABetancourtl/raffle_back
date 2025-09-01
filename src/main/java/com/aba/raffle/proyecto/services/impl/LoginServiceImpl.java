@@ -2,12 +2,11 @@ package com.aba.raffle.proyecto.services.impl;
 
 import com.aba.raffle.proyecto.dto.LoginDTO;
 import com.aba.raffle.proyecto.dto.TokenDTO;
-import com.aba.raffle.proyecto.model.documents.User;
+import com.aba.raffle.proyecto.model.entities.User;
 import com.aba.raffle.proyecto.model.enums.EstadoUsuario;
 import com.aba.raffle.proyecto.repositories.UserRepository;
 import com.aba.raffle.proyecto.security.JWTUtils;
 import com.aba.raffle.proyecto.services.LoginService;
-import com.aba.raffle.proyecto.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

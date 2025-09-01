@@ -2,20 +2,14 @@ package com.aba.raffle.proyecto.conotrollers;
 
 import com.aba.raffle.proyecto.dto.BuyRequestDTO;
 import com.aba.raffle.proyecto.dto.MensajeDTO;
-import com.aba.raffle.proyecto.dto.UserCreateDTO;
-import com.aba.raffle.proyecto.model.documents.NumberRaffle;
-import com.aba.raffle.proyecto.model.enums.EstadoNumber;
 import com.aba.raffle.proyecto.repositories.NumberRepositoryCustomImpl;
 import com.aba.raffle.proyecto.services.PurchaseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,9 +20,18 @@ public class PurchaseController {
 
     @PostMapping("/comprarNumero")
     public ResponseEntity<MensajeDTO<String>> comprarNumero(@Valid @RequestBody BuyRequestDTO buyRequestDTO) throws Exception{
-        purchaseService.comprarNumero(buyRequestDTO);
+        purchaseService.comprarNumero(buyRequestDTO, null);
         return ResponseEntity.ok(new MensajeDTO<>(false,"Pago exitoso"));
     }
+
+    @GetMapping("/cantidadNumerosDisponibles")
+    public ResponseEntity<MensajeDTO<Integer>> obtenerCantidadNumerosDisponibles(@RequestParam String idRaffle) {
+        int cantidadNumerosDisponibles = purchaseService.obtenerCantidadNumerosDisponibles(idRaffle)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento sin numeros asignados"));
+        return ResponseEntity.ok(new MensajeDTO<>(false, cantidadNumerosDisponibles));
+    }
+
+
 
 //    @GetMapping("/cantidad-disponible")
 //    public ResponseEntity<MensajeDTO<Integer>> obtenerCantidadDisponible(@RequestParam String raffleId) {

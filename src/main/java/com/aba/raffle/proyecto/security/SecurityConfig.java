@@ -45,6 +45,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/raffle/numerosPorEmail/soloNumeros").permitAll()  //buscar numero daddo un email solo retorna los numeros (publico)
                         .requestMatchers("/api/admin/crearUsuario").permitAll() //crear usuario publico solo por pruebas
                         .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
+                        .requestMatchers("/api/purchase/cantidadNumerosDisponibles").permitAll() //cantidad numeros disponibles al momento de querer hacer el pago
+                        .requestMatchers("/api/mercadopago/crear-preferencia").permitAll()
+                        .requestMatchers("/api/mercadopago/webhook").permitAll()
+                        .requestMatchers("/api/mercadopago/procesar-pago").permitAll()
+            //            .requestMatchers("/api/admin/asignarNumero").permitAll() //solo por un momento, luego quitar los permisos
 
                         .anyRequest().authenticated()
                 )
@@ -58,7 +63,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("http://localhost:4200")); // Si usas Angular // Origen FRONT
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 

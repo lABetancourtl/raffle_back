@@ -2,10 +2,9 @@ package com.aba.raffle.proyecto.conotrollers;
 
 
 import com.aba.raffle.proyecto.dto.*;
-import com.aba.raffle.proyecto.model.documents.NumberRaffle;
-import com.aba.raffle.proyecto.model.documents.Raffle;
+import com.aba.raffle.proyecto.model.entities.NumberRaffle;
+import com.aba.raffle.proyecto.model.entities.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
-import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.services.RaffleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -40,23 +39,31 @@ public class RaffleController {
     }
 
     @GetMapping("/numerosPorEmail/soloNumeros")
-    public ResponseEntity<List<String>> obtenerSoloNumerosPorEmail(@RequestParam String email) {
+    public ResponseEntity<List<NumeroDTO>> obtenerSoloNumerosPorEmail(@RequestParam String email) {
         if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email no válido");
         }
-        List<String> numeros = raffleService.obtenerSoloNumerosPorEmail(email);
+        List<NumeroDTO> numeros = raffleService.obtenerSoloNumerosPorEmail(email);
+        System.out.println("Numeros: "+numeros);
         return ResponseEntity.ok(numeros);
     }
 
 
     @GetMapping("/clientePorNumero")
-    public ResponseEntity<MensajeDTO<ResultadoBuyerDTO>> obtenerClientePorNumero(@Valid @RequestParam String numero) throws Exception{
+    public ResponseEntity<MensajeDTO<ResultadoBuyerDTO>> obtenerClientePorNumero(
+            @RequestParam String raffleId,
+            @RequestParam String numero) throws Exception {
+
         if (!numero.matches("^[0-9]{1,4}$")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Número no válido");
         }
-        ResultadoBuyerDTO resultado = raffleService.obtenerClientePorNumero(numero);
+
+        String numeroCompleto = raffleId + "_" + numero;
+
+        ResultadoBuyerDTO resultado = raffleService.obtenerClientePorNumero(numeroCompleto);
         return ResponseEntity.ok(new MensajeDTO<>(false, resultado));
     }
+
 
     @PatchMapping("/cambiarEstadoNumero")
     public ResponseEntity<MensajeDTO<String>> cambiarStateNumber(@Valid @RequestBody CambiarStateNumberDTO cambiarStateNumberDTO) throws Exception{
@@ -80,6 +87,7 @@ public class RaffleController {
     @PatchMapping("/cambiarEstadoRifa")
     public ResponseEntity<MensajeDTO<String>> cambiarStateRaffle(@Valid @RequestBody CambiarStateRaffleDTO cambiarStateRaffleDTO) throws Exception{
         raffleService.cambiarStateRaffle(cambiarStateRaffleDTO);
+
         return ResponseEntity.ok(new MensajeDTO<>(false, "Estado cambiado correctamente"));
     }
 
@@ -94,6 +102,12 @@ public class RaffleController {
         Raffle raffle = raffleService.obtenerRifaActiva()
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay rifa activa"));
         return ResponseEntity.ok(raffle);
+    }
+
+    @GetMapping("/operaciones/{raffleId}")
+    public ResponseEntity<List<PaymentOperationDTO>> getOperacionesByRaffle(@PathVariable String raffleId) {
+        List<PaymentOperationDTO> operaciones = raffleService.getOperacionesByRaffle(raffleId);
+        return ResponseEntity.ok(operaciones);
     }
 
 

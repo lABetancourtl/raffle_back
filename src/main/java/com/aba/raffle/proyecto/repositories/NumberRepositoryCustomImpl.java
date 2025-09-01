@@ -1,14 +1,10 @@
 package com.aba.raffle.proyecto.repositories;
 
-import com.aba.raffle.proyecto.model.documents.NumberRaffle;
+import com.aba.raffle.proyecto.model.entities.NumberRaffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
-import com.aba.raffle.proyecto.repositories.NumberRepositoryCustom;
-import org.bson.Document;
-import org.bson.types.ObjectId;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.aggregation.*;
-import org.springframework.data.mongodb.core.query.Criteria;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -16,22 +12,20 @@ import java.util.List;
 @Repository
 public class NumberRepositoryCustomImpl implements NumberRepositoryCustom {
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Override
-    public List<NumberRaffle> findRandomAvailableNumbers(ObjectId raffleId, EstadoNumber estado, int quantity) {
-        MatchOperation match = Aggregation.match(
-                Criteria.where("raffleId").is(raffleId)
-                        .and("stateNumber").is(estado)
-        );
+    public List<NumberRaffle> findRandomAvailableNumbers(Long raffleId, EstadoNumber estado, int quantity) {
+        String jpql = "SELECT n FROM NumberRaffle n " +
+                "WHERE n.stateNumber = :estado AND n.raffleId = :raffleId " +
+                "ORDER BY function('RANDOM')";
 
-        SampleOperation sample = Aggregation.sample(quantity);
+        TypedQuery<NumberRaffle> query = entityManager.createQuery(jpql, NumberRaffle.class);
+        query.setParameter("estado", estado);
+        query.setParameter("raffleId", raffleId);
+        query.setMaxResults(quantity);
 
-        Aggregation aggregation = Aggregation.newAggregation(match, sample);
-
-        AggregationResults<NumberRaffle> results = mongoTemplate.aggregate(aggregation, "numbers", NumberRaffle.class);
-
-        return results.getMappedResults();
+        return query.getResultList();
     }
 }
