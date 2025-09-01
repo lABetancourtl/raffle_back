@@ -23,12 +23,14 @@ public class PurchaseController {
         purchaseService.comprarNumero(buyRequestDTO, null);
         return ResponseEntity.ok(new MensajeDTO<>(false,"Pago exitoso"));
     }
+
     @GetMapping("/cantidadNumerosDisponibles")
     public ResponseEntity<MensajeDTO<Integer>> obtenerCantidadNumerosDisponibles(@RequestParam String idRaffle) {
         int cantidadNumerosDisponibles = purchaseService.obtenerCantidadNumerosDisponibles(idRaffle)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Evento sin numeros asignados"));
         return ResponseEntity.ok(new MensajeDTO<>(false, cantidadNumerosDisponibles));
     }
+
 
 
 //    @GetMapping("/cantidad-disponible")

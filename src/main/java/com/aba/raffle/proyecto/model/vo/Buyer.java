@@ -1,13 +1,15 @@
 package com.aba.raffle.proyecto.model.vo;
 
+import jakarta.persistence.Embeddable;
 import lombok.*;
 
+@Embeddable
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Data
 @Builder
+@ToString
 public class Buyer {
 
     private String name;

@@ -3,9 +3,9 @@ package com.aba.raffle.proyecto.services.impl;
 import com.aba.raffle.proyecto.dto.*;
 import com.aba.raffle.proyecto.mappers.PaymentOperationMapper;
 import com.aba.raffle.proyecto.mappers.RaffleMapper;
-import com.aba.raffle.proyecto.model.documents.NumberRaffle;
-import com.aba.raffle.proyecto.model.documents.PaymentOperation;
-import com.aba.raffle.proyecto.model.documents.Raffle;
+import com.aba.raffle.proyecto.model.entities.NumberRaffle;
+import com.aba.raffle.proyecto.model.entities.PaymentOperation;
+import com.aba.raffle.proyecto.model.entities.Raffle;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
 import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.model.vo.Buyer;
@@ -14,13 +14,13 @@ import com.aba.raffle.proyecto.repositories.PaymentOperationRepository;
 import com.aba.raffle.proyecto.repositories.RaffleRepository;
 import com.aba.raffle.proyecto.services.RaffleService;
 import lombok.RequiredArgsConstructor;
-import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,14 +40,14 @@ public class RaffleServiceImpl implements RaffleService {
         Raffle raffle = raffleMapper.fromCreateRaffleDTO(raffleCreate);
         raffleRepository.save(raffle); // aquí raffle ya tiene su ID generado
 
-        // 2. Calcular cantidad total de números (10^digitLength)https://3dc8-152-202-206-54.ngrok-free.app
+        // 2. Calcular cantidad total de números (10^digitLength)
         int digitLength = raffle.getDigitLength();
         int totalNumbers = (int) Math.pow(10, digitLength);
         List<NumberRaffle> numbers = new ArrayList<>(totalNumbers);
         for (int i = 0; i < totalNumbers; i++) {
             String formattedNumber = String.format("%0" + digitLength + "d", i);
             NumberRaffle numberRaffle = NumberRaffle.builder()
-                    .number(formattedNumber)
+                    .number(raffle.getId() + "_" + formattedNumber) // ID único basado en rifa + número
                     .stateNumber(EstadoNumber.DISPONIBLE)
                     .buyer(null)
                     .raffleId(raffle.getId())
@@ -56,7 +56,7 @@ public class RaffleServiceImpl implements RaffleService {
                     .build();
             numbers.add(numberRaffle);
         }
-
+        System.out.println("Todos los numeros: " + numbers.get(0).getNumber());
         // 3. Guardar todos los números en la colección numbers
         numberRepository.saveAll(numbers);
     }
@@ -109,7 +109,7 @@ public class RaffleServiceImpl implements RaffleService {
 
     @Override
     public void cambiarStateRaffle(CambiarStateRaffleDTO cambiarStateRaffleDTO) {
-        ObjectId idRaffle = new ObjectId(cambiarStateRaffleDTO.id());
+        Long idRaffle = Long.valueOf(cambiarStateRaffleDTO.id());
         Raffle raffle = raffleRepository.findById(idRaffle)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
 
@@ -132,7 +132,48 @@ public class RaffleServiceImpl implements RaffleService {
 
     @Override
     public List<Raffle> obtenerTodasLasRifas() {
-        return raffleRepository.findAll();
+        List<Raffle> rifas = raffleRepository.findAll();
+
+        if (rifas.isEmpty()) {
+            return rifas;
+        }
+
+        // Obtenemos todos los IDs de las rifas
+        List<Long> rifaIds = rifas.stream()
+                .map(Raffle::getId)
+                .collect(Collectors.toList());
+
+        // Obtenemos todos los números vendidos de todas las rifas en una sola consulta
+        List<NumberRaffle> todosNumerosVendidos = numberRepository.findByStateNumberAndRaffleIdIn(EstadoNumber.VENDIDO, rifaIds);
+
+        List<NumberRaffle> numerosD = numberRepository.findByStateNumberAndRaffleIdIn(EstadoNumber.DISPONIBLE, rifaIds);
+        int numerosDisponibles = numerosD.size();
+
+
+
+        // Creamos un mapa de conteo por rifa
+        Map<Long, Long> conteoPorRifa = todosNumerosVendidos.stream()
+                .collect(Collectors.groupingBy(
+                        NumberRaffle::getRaffleId,
+                        Collectors.counting()
+                ));
+
+        // Calculamos el porcentaje para cada rifa
+        return rifas.stream()
+                .map(raffle -> {
+                    Long numerosVendidos = conteoPorRifa.getOrDefault(raffle.getId(), 0L);
+                    int totalNumerosPosibles = (int) Math.pow(10, raffle.getDigitLength());
+
+                    int porcentajeVendidos = totalNumerosPosibles > 0
+                            ? (int) (numerosVendidos * 100 / totalNumerosPosibles)
+                            : 0;
+
+                    raffle.setPorcentajeVendidos(porcentajeVendidos);
+                    raffle.setCantidadDisponibles(numerosDisponibles);
+                    return raffle;
+                })
+                .collect(Collectors.toList());
+
     }
 
     @Override
@@ -144,12 +185,14 @@ public class RaffleServiceImpl implements RaffleService {
         }
 
         Raffle raffle = raffleOpt.get();
-        ObjectId idRaffle = raffle.getId(); // <-- usa el ObjectId real
+        Long idRaffle = raffle.getId(); // <-- usa el ObjectId real
 
         // Obtenemos los números vendidos de esa rifa
-        List<NumberRaffle> numeros = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, idRaffle);
-        int numerosVendidos = numeros.size();
+        List<NumberRaffle> numerosV = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, idRaffle);
+        int numerosVendidos = numerosV.size();
 
+        List<NumberRaffle> numerosD = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.DISPONIBLE, idRaffle);
+        int numerosDisponibles = numerosD.size();
 
         // Calculamos el total de números posibles según los dígitos
         int totalNumerosPosibles = (int) Math.pow(10, raffle.getDigitLength());
@@ -161,17 +204,25 @@ public class RaffleServiceImpl implements RaffleService {
 
         // Asignamos el valor al campo @Transient
         raffle.setPorcentajeVendidos(porcentajeVendidos);
+        raffle.setCantidadDisponibles(numerosDisponibles);
 
         return Optional.of(raffle);
     }
 
+    /*Este metodo se encarga de retornar solo el numero de la rifa el cual esta despues del _ en el campo asignado como @Id del document en mongo.
+    Ej:  este es el @Id 685debac1a01612f9b97836c_00 y el metodo retorna solo 00
+    */
     @Override
-    public List<String> obtenerSoloNumerosPorEmail(String email) {
+    public List<NumeroDTO> obtenerSoloNumerosPorEmail(String email) {
         return numberRepository.findByBuyerEmail(email)
                 .stream()
                 .map(NumberRaffle::getNumber)
+                .map(n -> n.contains("_") ? n.split("_")[1] : n)
+                .map(NumeroDTO::new)
                 .collect(Collectors.toList());
     }
+
+
 
     @Override
     public List<PaymentOperationDTO> getOperacionesByRaffle(String raffleId) {

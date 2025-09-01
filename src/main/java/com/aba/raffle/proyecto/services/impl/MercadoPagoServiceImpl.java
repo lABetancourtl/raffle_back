@@ -2,10 +2,9 @@ package com.aba.raffle.proyecto.services.impl;
 
 import com.aba.raffle.proyecto.dto.BuyRequestDTO;
 import com.aba.raffle.proyecto.dto.PagoRequestDTO;
-import com.aba.raffle.proyecto.model.documents.NumberRaffle;
-import com.aba.raffle.proyecto.model.documents.PaymentOperation;
+import com.aba.raffle.proyecto.model.entities.NumberRaffle;
+import com.aba.raffle.proyecto.model.entities.PaymentOperation;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
-import com.aba.raffle.proyecto.model.vo.Buyer;
 import com.aba.raffle.proyecto.repositories.NumberRepository;
 import com.aba.raffle.proyecto.repositories.PaymentOperationRepository;
 import com.aba.raffle.proyecto.services.MercadoPagoService;
@@ -16,12 +15,8 @@ import com.mercadopago.client.preference.*;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -66,9 +61,9 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 .items(List.of(item))
                 .payer(payer)
                 .externalReference(externalReference)
-                .notificationUrl("https://fb12-152-202-206-54.ngrok-free.app/api/mercadopago/webhook")
+                .notificationUrl("https://007f47cd7f22.ngrok-free.app/api/mercadopago/webhook")
                 .backUrls(PreferenceBackUrlsRequest.builder()
-                        .success("https://tuapp.com/pago-exitoso")
+                        .success("https://www.youtube.com/watch?v=QLfmxIfrd-8/pago-exitoso")
                         .failure("https://tuapp.com/pago-fallido")
                         .pending("https://tuapp.com/pago-pendiente")
                         .build())
@@ -214,7 +209,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
     @Scheduled(fixedRate = 60000) // cada 1 minuto
     public void liberarReservasVencidas() {
-        LocalDateTime hace10Min = LocalDateTime.now().minusMinutes(3);
+        LocalDateTime hace10Min = LocalDateTime.now().minusMinutes(1);
         List<NumberRaffle> vencidos = numberRepository.findByStateNumberAndReservedAtBefore(
                 EstadoNumber.RESERVADO, hace10Min
         );

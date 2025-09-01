@@ -1,13 +1,14 @@
 package com.aba.raffle.proyecto.repositories;
 
-import com.aba.raffle.proyecto.mappers.RaffleMapper;
-import com.aba.raffle.proyecto.model.documents.PaymentOperation;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import com.aba.raffle.proyecto.model.entities.PaymentOperation;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface PaymentOperationRepository extends MongoRepository<PaymentOperation, String> {
+public interface PaymentOperationRepository extends JpaRepository<PaymentOperation, Long> {
+
     List<PaymentOperation> findByRaffleId(String raffleId);
+
 }

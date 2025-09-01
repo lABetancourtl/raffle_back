@@ -5,7 +5,7 @@ import java.util.List;
 
 public record PaymentOperationDTO(
         String id,
-        String paymentId, // <-- AÑADIDO
+        String paymentId,
         String status,
         double monto,
         String moneda,
@@ -16,7 +16,7 @@ public record PaymentOperationDTO(
         String compradorEmail,
         String raffleId,
         int cantidadNumeros,
-        List<String> numerosComprados,
+        List<NumeroDTO> numerosComprados,
         boolean expirada
 ) {}
 

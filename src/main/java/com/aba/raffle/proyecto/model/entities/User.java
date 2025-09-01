@@ -1,13 +1,13 @@
-package com.aba.raffle.proyecto.model.documents;
+package com.aba.raffle.proyecto.model.entities;
 
 import com.aba.raffle.proyecto.model.enums.EstadoUsuario;
 import com.aba.raffle.proyecto.model.enums.Role;
+import jakarta.persistence.*;
 import lombok.*;
-import org.bson.types.ObjectId;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
 
-@Document("usuarios")
+@Entity
+@Table(name = "usuarios")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -18,13 +18,19 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
-    private ObjectId id;
+    private Long id;
 
     private String name;
     private String email;
     private String password;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Enumerated(EnumType.STRING)
     private EstadoUsuario estadoUsuario;
-    private String fechaRegistro;
+
+    private LocalDateTime fechaRegistro; // antes era String
 }

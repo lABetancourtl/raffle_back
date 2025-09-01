@@ -1,16 +1,15 @@
 package com.aba.raffle.proyecto.repositories;
 
-import com.aba.raffle.proyecto.model.documents.User;
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.repository.MongoRepository;
+import com.aba.raffle.proyecto.model.entities.User;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends MongoRepository<User, ObjectId> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByEmail(String email);
 
-    Optional<User> findById(String id);
+    Optional<User> findById(Long id);
 }
