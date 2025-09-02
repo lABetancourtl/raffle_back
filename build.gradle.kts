@@ -52,7 +52,7 @@ dependencies {
     implementation("com.cloudinary:cloudinary-http45:1.39.0")
     implementation("com.mercadopago:sdk-java:2.5.0")
 
-    // ✅ PostgreSQL + JPA
+    // PostgreSQL + JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.postgresql:postgresql")
 }
