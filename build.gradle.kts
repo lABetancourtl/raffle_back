@@ -57,11 +57,6 @@ dependencies {
     implementation("org.postgresql:postgresql")
 }
 
-
-tasks.withType<Test> {
-	useJUnitPlatform()
-}
-
 tasks.test {
 	outputs.dir(project.extra["snippetsDir"]!!)
 }
