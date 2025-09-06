@@ -1,6 +1,6 @@
 package com.aba.raffle.proyecto.dto;
 
-import com.aba.raffle.proyecto.model.enums.EstadoUsuario;
+import com.aba.raffle.proyecto.model.enums.EstadoUsuarioAdmin;
 import com.aba.raffle.proyecto.model.enums.Role;
 
 public record UserDTO(
@@ -8,7 +8,7 @@ public record UserDTO(
         String name,
         String email,
         Role role,
-        EstadoUsuario estadoUsuario,
+        EstadoUsuarioAdmin estadoUsuarioAdmin,
         String fechaRegistro
 ) {
 }

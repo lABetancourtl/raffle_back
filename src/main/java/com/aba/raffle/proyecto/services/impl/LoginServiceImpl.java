@@ -2,9 +2,9 @@ package com.aba.raffle.proyecto.services.impl;
 
 import com.aba.raffle.proyecto.dto.LoginDTO;
 import com.aba.raffle.proyecto.dto.TokenDTO;
-import com.aba.raffle.proyecto.model.entities.User;
-import com.aba.raffle.proyecto.model.enums.EstadoUsuario;
-import com.aba.raffle.proyecto.repositories.UserRepository;
+import com.aba.raffle.proyecto.model.entities.UserAdmin;
+import com.aba.raffle.proyecto.model.enums.EstadoUsuarioAdmin;
+import com.aba.raffle.proyecto.repositories.UserAdminRepository;
 import com.aba.raffle.proyecto.security.JWTUtils;
 import com.aba.raffle.proyecto.services.LoginService;
 import lombok.RequiredArgsConstructor;
@@ -16,15 +16,15 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 public class LoginServiceImpl implements LoginService {
-    private final UserRepository userRepository;
+    private final UserAdminRepository userAdminRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTUtils jwtUtils;
 
     @Override
     public TokenDTO login(LoginDTO loginDTO) throws Exception {
-        User user = userRepository.findByEmail(loginDTO.email())
+        UserAdmin user = userAdminRepository.findByEmail(loginDTO.email())
                 .orElseThrow(() -> new Exception("El usuario no existe"));
-        if (!user.getEstadoUsuario().equals(EstadoUsuario.ACTIVO)) {
+        if (!user.getEstadoUsuarioAdmin().equals(EstadoUsuarioAdmin.ACTIVO)) {
             throw new Exception("El usuario esta inactivo");
         }
 

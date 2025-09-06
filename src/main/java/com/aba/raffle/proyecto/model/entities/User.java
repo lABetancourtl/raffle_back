@@ -1,13 +1,11 @@
 package com.aba.raffle.proyecto.model.entities;
 
-import com.aba.raffle.proyecto.model.enums.EstadoUsuario;
-import com.aba.raffle.proyecto.model.enums.Role;
+import com.aba.raffle.proyecto.model.enums.EstadoUser;
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "usuarios")
+@Table(name = "usuariosHome")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -22,15 +20,21 @@ public class User {
     @EqualsAndHashCode.Include
     private Long id;
 
-    private String name;
+    //Datos iniciales para el registro
     private String email;
     private String password;
+    private String urlImagDocFront;
+    private String urlImagDocBack;
 
-    @Enumerated(EnumType.STRING)
-    private Role role;
+    //Datos obtenidos del documento de identidad
+    private String name;
+    private String surName;
+    private String DocNumber;
+    private String dateOfBirth;
 
-    @Enumerated(EnumType.STRING)
-    private EstadoUsuario estadoUsuario;
+    //Estado de la cuenta
+    private EstadoUser estadoUser;
 
-    private LocalDateTime fechaRegistro; // antes era String
+
+
 }

@@ -33,7 +33,7 @@ public record RaffleCreateDTO(
         @Max(value = 5, message = "La cantidad de dígitos debe ser máximo 5")
         int digitLength,
 
-        @ThreePackagesOnly  // 👈 validación personalizada
+        @ThreePackagesOnly
         List<Integer> paquetes
 ) {
 }
