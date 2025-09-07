@@ -9,6 +9,5 @@ public record UserAdminCreateDTO(
         @NotBlank @Email @Length ( max = 100)         String email,
         @NotBlank @Length        ( min = 6, max = 20) String password
 
-
 ) {
 }

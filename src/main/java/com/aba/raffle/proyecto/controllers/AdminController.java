@@ -1,10 +1,7 @@
-package com.aba.raffle.proyecto.conotrollers;
+package com.aba.raffle.proyecto.controllers;
 
 
-import com.aba.raffle.proyecto.dto.BuyRequestDTO;
-import com.aba.raffle.proyecto.dto.MensajeDTO;
-import com.aba.raffle.proyecto.dto.NumeroDTO;
-import com.aba.raffle.proyecto.dto.UserAdminCreateDTO;
+import com.aba.raffle.proyecto.dto.*;
 import com.aba.raffle.proyecto.services.PurchaseService;
 import com.aba.raffle.proyecto.services.UserService;
 import jakarta.validation.Valid;
@@ -17,20 +14,20 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/admin")
-public class AdminControlller {
+public class AdminController {
 
     private final UserService userService;
     private final PurchaseService purchaseService;
 
-    //Este endpoint es para crear cuentas de administrador
-    @PostMapping("/crearUsuario")
-    public ResponseEntity<MensajeDTO<String>> crearUsuario(@Valid @RequestBody UserAdminCreateDTO userCreate) throws Exception{
+
+    @PostMapping("/crearUsuario")     //Este endpoint es para crear cuentas de administrador
+    public ResponseEntity<MensajeDTO<String>> crearUserAdmin(@Valid @RequestBody UserAdminCreateDTO userCreate) throws Exception{
         userService.crearUserAdmin(userCreate);
         return ResponseEntity.ok(new MensajeDTO<>(false,"Usuario creado correctamente"));
     }
 
     @PostMapping("/crearUsuarioHome")
-    public ResponseEntity<MensajeDTO<String>> crearUsuarioHome(@Valid @RequestBody UserAdminCreateDTO userCreate) throws Exception{
+    public ResponseEntity<MensajeDTO<String>> crearUsuarioHome(@Valid @RequestBody UserNotValidatedCreateDTO userCreate) throws Exception{
         userService.crearUser(userCreate);
         return ResponseEntity.ok(new MensajeDTO<>(false,"Usuario creado correctamente"));
     }
