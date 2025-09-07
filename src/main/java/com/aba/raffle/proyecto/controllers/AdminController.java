@@ -32,6 +32,13 @@ public class AdminController {
         return ResponseEntity.ok(new MensajeDTO<>(false,"Usuario creado correctamente"));
     }
 
+
+    @PutMapping("/validarEmail")
+    public ResponseEntity<MensajeDTO<String>> activarCuenta(@RequestBody ActivarCuentaDTO activarCuentaDTO) throws Exception {
+        userService.validarEmail(activarCuentaDTO);
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Activado correctamente."));
+    }
+
     @PatchMapping("/activarUsuario/{id}")
     public ResponseEntity<MensajeDTO<String>> activarUsuario(@Valid @PathVariable Long id) throws Exception{
         userService.activarUser(id);
