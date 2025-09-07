@@ -26,7 +26,7 @@ public class AdminController {
         return ResponseEntity.ok(new MensajeDTO<>(false,"Usuario creado correctamente"));
     }
 
-    @PostMapping("/crearUsuarioHome")
+    @PostMapping("/crearUsuarioHome") //Este endpoint es para crear cuenta de usuario final
     public ResponseEntity<MensajeDTO<String>> crearUsuarioHome(@Valid @RequestBody UserNotValidatedCreateDTO userCreate) throws Exception{
         userService.crearUser(userCreate);
         return ResponseEntity.ok(new MensajeDTO<>(false,"Usuario creado correctamente"));
