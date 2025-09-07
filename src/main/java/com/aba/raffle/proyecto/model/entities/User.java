@@ -1,6 +1,7 @@
 package com.aba.raffle.proyecto.model.entities;
 
 import com.aba.raffle.proyecto.model.enums.EstadoUser;
+import com.aba.raffle.proyecto.model.vo.CodigoValidacion;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -31,6 +32,9 @@ public class User {
     private String surName;
     private String DocNumber;
     private String dateOfBirth;
+
+    //Codigo de validacion email
+    private CodigoValidacion codigoValidacion;
 
     //Estado de la cuenta
     private EstadoUser estadoUser;

@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,13 +22,19 @@ public class ImagenController {
     private final ImagenService imagenService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, String>> subirImagen(@RequestParam("imagen") MultipartFile imagen) throws Exception {
-        Map datos = imagenService.subirImagen(imagen);
-        String url = (String) datos.get("secure_url");
+    public ResponseEntity<Map<String, Object>> subirImagenes(@RequestParam("imagenes") MultipartFile[] imagenes) throws Exception {
+        List<String> urls = new ArrayList<>();
 
-        // Devuelve JSON explícito
-        return ResponseEntity.ok(Map.of("url", url));
+        for (MultipartFile imagen : imagenes) {
+            Map<String, String> datos = imagenService.subirImagen(imagen);
+            String url = datos.get("secure_url");
+            urls.add(url);
+        }
+
+        // Devuelve JSON con todas las URLs
+        return ResponseEntity.ok(Map.of("urls", urls));
     }
+
 
 
 

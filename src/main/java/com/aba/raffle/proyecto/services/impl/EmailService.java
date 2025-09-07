@@ -31,7 +31,7 @@ public class EmailService implements IEmailService {
                 helper = new MimeMessageHelper(message,true, "UTF-8");
                 helper.setTo(to);
                 helper.setSubject(subject);
-                helper.setText( htmlContentCode(code), true);
+                helper.setText( htmlContentActivationCode(code), true);
                 mailSender.send(message);
             } catch (MessagingException e) {
                 e.printStackTrace();
@@ -208,4 +208,24 @@ public class EmailService implements IEmailService {
                 + "</div>"
                 + "</div>";
     }
+
+    private String htmlContentActivationCode(String codigoActivacion) {
+        return """
+        <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                <div style="max-width: 600px; margin: auto; background-color: white; padding: 20px; border-radius: 8px;">
+                    <h2 style="color: #4CAF50; text-align: center;">Verificación de cuenta</h2>
+                    <p>Tu código de verificación es:</p>
+                    <h1 style="background-color: #eee; padding: 10px; border-radius: 4px; text-align: center;">%s</h1>
+                    <p>Si no solicitaste este código, ignora este correo.</p>
+                    <p style="font-size: 12px; color: #888;">Correo automático, no responder.</p>
+                </div>
+            </body>
+        </html>
+        """.formatted(codigoActivacion);
+    }
+
+
+
+
 }
