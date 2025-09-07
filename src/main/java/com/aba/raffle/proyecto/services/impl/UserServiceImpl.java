@@ -1,7 +1,9 @@
 package com.aba.raffle.proyecto.services.impl;
 
 import com.aba.raffle.proyecto.dto.UserAdminCreateDTO;
+import com.aba.raffle.proyecto.dto.UserNotValidatedCreateDTO;
 import com.aba.raffle.proyecto.mappers.UserAdminMapper;
+import com.aba.raffle.proyecto.mappers.UserMapper;
 import com.aba.raffle.proyecto.model.entities.User;
 import com.aba.raffle.proyecto.model.entities.UserAdmin;
 import com.aba.raffle.proyecto.model.enums.EstadoUsuarioAdmin;
@@ -19,26 +21,34 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private final UserAdminMapper userAdminMapper;
+    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
 
+
+    //Metodo para crear usuario admin
     @Override
     public void crearUserAdmin(UserAdminCreateDTO userAdminCreateDTO) throws Exception {
         if(existeEmailAdmin(userAdminCreateDTO.email())){
             throw new Exception("El email ya existe");
         }
-        UserAdmin user = userAdminMapper.fromCreateUserDTO(userAdminCreateDTO);
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        UserAdmin userAdmin = userAdminMapper.fromCreateUserDTO(userAdminCreateDTO);
+        userAdmin.setPassword(passwordEncoder.encode(userAdmin.getPassword()));
 
-        userAdminRepository.save(user);
+        System.out.println("Datos del usuario a crear:" + userAdmin);
+        userAdminRepository.save(userAdmin);
 
     }
 
+    //Metodo para crear usuario final (home)
     @Override
-    public void crearUser(UserAdminCreateDTO userCreate) throws Exception {
-        if(existeEmailAdmin(userCreate.email())){
+    public void crearUser(UserNotValidatedCreateDTO userNotValidatedCreateDTO) throws Exception {
+        if(existeEmailAdmin(userNotValidatedCreateDTO.email())){
             throw new Exception("Ya existe una cuenta activa con este email o esta en proceso de ser activada");
         }
-        User user =
+        User userHome = userMapper.fromCreateUserNotValidatedDTO(userNotValidatedCreateDTO);
+        userHome.setPassword(passwordEncoder.encode(userHome.getPassword()));
+
+        userRepository.save(userHome);
 
     }
 
@@ -62,6 +72,6 @@ public class UserServiceImpl implements UserService {
     }
 
     private boolean existeEmailUser(String email) {
-        return userRepository.findByUserEmail(email).isPresent();
+        return userRepository.findByEmail(email).isPresent();
     }
 }

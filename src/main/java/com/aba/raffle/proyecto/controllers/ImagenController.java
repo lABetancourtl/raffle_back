@@ -1,4 +1,4 @@
-package com.aba.raffle.proyecto.conotrollers;
+package com.aba.raffle.proyecto.controllers;
 
 import com.aba.raffle.proyecto.services.ImagenService;
 import lombok.RequiredArgsConstructor;

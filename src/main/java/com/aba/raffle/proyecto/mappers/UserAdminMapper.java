@@ -11,7 +11,7 @@ public interface UserAdminMapper {
     UserDTO toUserDTO(UserAdmin user); // Convierte User a UserDTO
 
     @Mapping(target = "id", ignore = true) // ID se genera automáticamente
-    @Mapping(target = "estadoUsuario", constant = "INACTIVO")
+    @Mapping(target = "estadoUsuarioAdmin", constant = "INACTIVO")
     @Mapping(target = "role", constant = "ROLE_ADMIN")
     @Mapping(target = "fechaRegistro", expression = "java(java.time.LocalDateTime.now())")
     UserAdmin fromCreateUserDTO(UserAdminCreateDTO userAdminCreateDTO); // Convierte UserCreateDTO a User

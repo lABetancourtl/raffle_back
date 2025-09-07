@@ -1,13 +1,14 @@
 package com.aba.raffle.proyecto.services;
 
 import com.aba.raffle.proyecto.dto.UserAdminCreateDTO;
+import com.aba.raffle.proyecto.dto.UserNotValidatedCreateDTO;
 import jakarta.validation.Valid;
 
 public interface UserService {
 
     void crearUserAdmin(UserAdminCreateDTO userCreate) throws Exception;
 
-    void crearUser(@Valid UserAdminCreateDTO userCreate) throws Exception;
+    void crearUser(UserNotValidatedCreateDTO userNotValidatedCreate) throws Exception;
 
     void activarUser(@Valid Long id) throws Exception;
 
