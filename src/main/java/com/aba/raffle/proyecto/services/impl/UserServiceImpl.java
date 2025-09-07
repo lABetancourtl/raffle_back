@@ -7,12 +7,15 @@ import com.aba.raffle.proyecto.mappers.UserMapper;
 import com.aba.raffle.proyecto.model.entities.User;
 import com.aba.raffle.proyecto.model.entities.UserAdmin;
 import com.aba.raffle.proyecto.model.enums.EstadoUsuarioAdmin;
+import com.aba.raffle.proyecto.model.vo.CodigoValidacion;
 import com.aba.raffle.proyecto.repositories.UserAdminRepository;
 import com.aba.raffle.proyecto.repositories.UserRepository;
 import com.aba.raffle.proyecto.services.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private final UserAdminMapper userAdminMapper;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
 
     //Metodo para crear usuario admin
@@ -48,7 +52,17 @@ public class UserServiceImpl implements UserService {
         User userHome = userMapper.fromCreateUserNotValidatedDTO(userNotValidatedCreateDTO);
         userHome.setPassword(passwordEncoder.encode(userHome.getPassword()));
 
+        String codigoActivacion = generarCodigo();
+        userHome.setCodigoValidacion(new CodigoValidacion(
+                codigoActivacion,
+                LocalDateTime.now()
+        ));
+
         userRepository.save(userHome);
+
+        String asunto = "Verificacion de cuenta";
+        String destinatario = userHome.getEmail();
+        emailService.sendEmailCode(destinatario, asunto, codigoActivacion);
 
     }
 
@@ -73,5 +87,16 @@ public class UserServiceImpl implements UserService {
 
     private boolean existeEmailUser(String email) {
         return userRepository.findByEmail(email).isPresent();
+    }
+
+
+    private String generarCodigo() {
+        String digitos = "0123456789";
+        StringBuilder codigo = new StringBuilder();
+        for (int i = 0; i < 5; i++) {
+            int indice = (int) (Math.random() * digitos.length());
+            codigo.append(digitos.charAt(indice));
+        }
+        return codigo.toString();
     }
 }
