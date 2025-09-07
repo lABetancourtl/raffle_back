@@ -21,7 +21,6 @@ public class ImagenController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> subirImagen(@RequestParam("imagen") MultipartFile imagen) throws Exception {
-        System.out.println("POST /api/imagenes recibido");
         Map datos = imagenService.subirImagen(imagen);
         String url = (String) datos.get("secure_url");
 
