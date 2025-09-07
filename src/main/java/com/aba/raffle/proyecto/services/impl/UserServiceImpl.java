@@ -1,11 +1,13 @@
 package com.aba.raffle.proyecto.services.impl;
 
+import com.aba.raffle.proyecto.dto.ActivarCuentaDTO;
 import com.aba.raffle.proyecto.dto.UserAdminCreateDTO;
 import com.aba.raffle.proyecto.dto.UserNotValidatedCreateDTO;
 import com.aba.raffle.proyecto.mappers.UserAdminMapper;
 import com.aba.raffle.proyecto.mappers.UserMapper;
 import com.aba.raffle.proyecto.model.entities.User;
 import com.aba.raffle.proyecto.model.entities.UserAdmin;
+import com.aba.raffle.proyecto.model.enums.EstadoUser;
 import com.aba.raffle.proyecto.model.enums.EstadoUsuarioAdmin;
 import com.aba.raffle.proyecto.model.vo.CodigoValidacion;
 import com.aba.raffle.proyecto.repositories.UserAdminRepository;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +49,7 @@ public class UserServiceImpl implements UserService {
     //Metodo para crear usuario final (home)
     @Override
     public void crearUser(UserNotValidatedCreateDTO userNotValidatedCreateDTO) throws Exception {
-        if(existeEmailAdmin(userNotValidatedCreateDTO.email())){
+        if(existeEmailUser(userNotValidatedCreateDTO.email())){
             throw new Exception("Ya existe una cuenta activa con este email o esta en proceso de ser activada");
         }
         User userHome = userMapper.fromCreateUserNotValidatedDTO(userNotValidatedCreateDTO);
@@ -79,6 +82,30 @@ public class UserServiceImpl implements UserService {
         user.setEstadoUsuarioAdmin(EstadoUsuarioAdmin.INACTIVO);
         userAdminRepository.save(user);
 
+    }
+
+
+    @Override
+    public void validarEmail(ActivarCuentaDTO activarCuentaDTO) throws Exception  {
+        User user = obtenerPorEmail(activarCuentaDTO.email());
+        if (!user.getCodigoValidacion().getCodigo().equals(activarCuentaDTO.codigoValidacion())) {
+            throw new Exception("El código de verificación es incorrecto");
+        }
+        if(!LocalDateTime.now().isBefore(user.getCodigoValidacion().getFechaCreacion().plusMinutes(15))) {
+            throw new Exception("El código de verificación ha caducado");
+        }
+        user.setEstadoUser(EstadoUser.PENDIENTE_VERIFICACION);
+        user.setCodigoValidacion(null);
+        userRepository.save(user);
+    }
+
+    //Metodo usado en activarCuenta y cambiarPassword para obtener el usuario por email
+    private User obtenerPorEmail(String email) throws Exception{
+        Optional<User> usuarioOptional = userRepository.findByEmail(email);
+        if (usuarioOptional.isEmpty()) {
+            throw new Exception("No se encontró el usuario con el email " + email);
+        }
+        return usuarioOptional.get();
     }
 
     private boolean existeEmailAdmin(String email) {
