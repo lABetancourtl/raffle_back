@@ -3,8 +3,10 @@ package com.aba.raffle.proyecto.services;
 import com.aba.raffle.proyecto.dto.ActivarCuentaDTO;
 import com.aba.raffle.proyecto.dto.UserAdminCreateDTO;
 import com.aba.raffle.proyecto.dto.UserNotValidatedCreateDTO;
-import com.aba.raffle.proyecto.model.vo.CodigoValidacion;
+import com.aba.raffle.proyecto.model.entities.User;
 import jakarta.validation.Valid;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -19,4 +21,5 @@ public interface UserService {
 
     void validarEmail(ActivarCuentaDTO activarCuentaDTO) throws Exception;
 
+    List<User> obtenerUsuarioEmailVerificado();
 }
