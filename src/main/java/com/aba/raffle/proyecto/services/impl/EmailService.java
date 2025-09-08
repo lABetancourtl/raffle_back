@@ -240,19 +240,27 @@ public class EmailService implements IEmailService {
 
     private String htmlContentActivationCode(String codigoActivacion) {
         return """
-        <html>
-            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
-                <div style="max-width: 600px; margin: auto; background-color: white; padding: 20px; border-radius: 8px;">
-                    <h2 style="color: #4CAF50; text-align: center;">Verificación de cuenta</h2>
-                    <p>Tu código de verificación es:</p>
-                    <h1 style="background-color: #eee; padding: 10px; border-radius: 4px; text-align: center;">%s</h1>
-                    <p>Si no solicitaste este código, ignora este correo.</p>
-                    <p style="font-size: 12px; color: #888;">Correo automático, no responder.</p>
-                </div>
-            </body>
-        </html>
-        """.formatted(codigoActivacion);
+    <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+            <div style="max-width: 600px; margin: auto; background-color: white; padding: 20px; border-radius: 8px;">
+                <h2 style="color: #4CAF50; text-align: center;">Verificación de cuenta</h2>
+                <p>Haz clic en el siguiente enlace para validar tu correo y usar tu código de verificación:</p>
+                <p style="text-align: center;">
+                    <a href="https://app-frontend-raffle-uq.web.app/validationEmail" 
+                       style="display: inline-block; background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">
+                        Validar cuenta
+                    </a>
+                </p>
+                <p style="text-align: center; margin-top: 10px;">Tu código de verificación es: <strong>%s</strong></p>
+                <p>Si no solicitaste este código, ignora este correo.</p>
+                <p style="font-size: 12px; color: #888;">Correo automático, no responder.</p>
+            </div>
+        </body>
+    </html>
+    """.formatted(codigoActivacion);
     }
+
+
 
     private String htmlContentPurchase(
             String nombre,
