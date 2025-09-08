@@ -14,37 +14,43 @@ import com.mercadopago.client.payment.PaymentClient;
 import com.mercadopago.client.preference.*;
 import com.mercadopago.resources.payment.Payment;
 import com.mercadopago.resources.preference.Preference;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 
 @Service
+@RequiredArgsConstructor
 public class MercadoPagoServiceImpl implements MercadoPagoService {
+
 
     @Value("${mercadopago.access.token}")
     private String accessToken;
 
     private final NumberRepository  numberRepository;
     private final PurchaseService purchaseService;
-    private PaymentOperationRepository paymentOperationRepository;
+    private final PaymentOperationRepository paymentOperationRepository;
+    private final EmailService emailService;
 
     @Value("${app.base.url}")
     private String baseUrl;
 
 
     // Inyección por constructor
-    public MercadoPagoServiceImpl(NumberRepository numberRepository, PurchaseService purchaseService, PaymentOperationRepository paymentOperationRepository) {
-        this.numberRepository = numberRepository;
-        this.purchaseService = purchaseService;
-        this.paymentOperationRepository = paymentOperationRepository;
-    }
+//    public MercadoPagoServiceImpl(NumberRepository numberRepository, PurchaseService purchaseService, PaymentOperationRepository paymentOperationRepository) {
+//        this.numberRepository = numberRepository;
+//        this.purchaseService = purchaseService;
+//        this.paymentOperationRepository = paymentOperationRepository;
+//    }
 
     public Map<String, String> crearPreferenciaPago(String descripcion, int cantidad, double precio, String email, String externalReference) throws Exception {
         MercadoPagoConfig.setAccessToken(accessToken);
@@ -65,7 +71,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 .items(List.of(item))
                 .payer(payer)
                 .externalReference(externalReference)
-                .notificationUrl(baseUrl + "/api/mercadopago/webhook")
+                .notificationUrl("https://8ec563bbd755.ngrok-free.app/api/mercadopago/webhook")
                 .backUrls(PreferenceBackUrlsRequest.builder()
                         .success("https://raffle-back-2.onrender.com/home")
                         .failure("https://raffle-back-2.onrender.com/home")
@@ -95,17 +101,30 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
                 // Datos del pago
                 String status = payment.getStatus();
-                String email = payment.getPayer().getEmail();
+                String emailMercadoPago = payment.getPayer().getEmail(); // Email de MP
                 double monto = payment.getTransactionAmount().doubleValue();
                 String metodo = payment.getPaymentMethodId();
                 String moneda = payment.getCurrencyId();
                 String externalReference = payment.getExternalReference();
+                System.out.println("External Reference recibido: " + externalReference);
+
                 LocalDateTime fecha = payment.getDateApproved() != null
                         ? payment.getDateApproved().toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()
                         : LocalDateTime.now();
 
                 // Buscar números asociados
                 List<NumberRaffle> numeros = numberRepository.findByPaymentSessionId(externalReference);
+
+                // ⭐⭐ SOLUCIÓN: Obtener el email REAL del comprador ⭐⭐
+                String emailCompradorReal = emailMercadoPago; // Por defecto usar email de MP
+
+                if (!numeros.isEmpty() && numeros.get(0).getBuyer() != null) {
+                    // Obtener el email que el comprador ingresó en tu formulario
+                    emailCompradorReal = numeros.get(0).getBuyer().getEmail();
+                    System.out.println("Email real del comprador: " + emailCompradorReal);
+                    System.out.println("Email de MercadoPago: " + emailMercadoPago);
+                }
+                // ⭐⭐ FIN DE SOLUCIÓN ⭐⭐
 
                 // Preparar operación
                 PaymentOperation op = new PaymentOperation();
@@ -116,12 +135,12 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 op.setMetodoPago(metodo);
                 op.setFechaPago(fecha);
                 op.setExternalReference(externalReference);
-                op.setCompradorEmail(email);
+                op.setCompradorEmail(emailCompradorReal); // ⭐ Usar el email real aquí
                 op.setRawPayload(payload.toString());
                 op.setRegistradoEn(LocalDateTime.now());
 
                 if (numeros.isEmpty()) {
-                    System.out.println("❌ No se encontraron números asociados a: " + externalReference);
+                    System.out.println("No se encontraron números asociados a: " + externalReference);
                     op.setExpirada(true);
                     paymentOperationRepository.save(op);
                     return;
@@ -130,8 +149,8 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 NumberRaffle primerNumero = numeros.get(0);
                 LocalDateTime reservedAt = primerNumero.getReservedAt();
 
-                if (reservedAt == null || reservedAt.isBefore(LocalDateTime.now().minusMinutes(1))) {
-                    System.out.println("❌ La reserva expiró. Liberando números.");
+                if (reservedAt == null || reservedAt.isBefore(LocalDateTime.now().minusMinutes(10))) {
+                    System.out.println("La reserva expiró. Liberando números.");
 
                     op.setExpirada(true);
                     op.setRaffleId(primerNumero.getRaffleId().toString());
@@ -170,12 +189,41 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                         numero.setReservedAt(LocalDateTime.now());
                     }
                     numberRepository.saveAll(numeros);
+
+
+                    List<String> numerosLimpios = new ArrayList<>();
+                    for (NumberRaffle numero : numeros) {
+                        String numeroCompleto = numero.getNumber();
+                        String numeroLimpio = numeroCompleto.contains("_")
+                                ? numeroCompleto.split("_")[1]
+                                : numeroCompleto;
+
+                        try {
+                            numerosLimpios.add((numeroLimpio));
+                        } catch (NumberFormatException e) {
+                            System.err.println("Error convirtiendo número: " + numeroLimpio);
+                        }
+                    }
+
+                    // ⭐⭐ ENVIAR CORREO AL EMAIL REAL DEL COMPRADOR ⭐⭐
+                    if (primerNumero.getBuyer() != null) {
+                        emailService.sendPurchaseConfirmationEmail(
+                                emailCompradorReal, // ⭐ Usar el email real aquí
+                                primerNumero.getBuyer().getName(),
+                                monto,
+                                moneda,
+                                metodo,
+                                fecha,
+                                numerosLimpios
+                        );
+                        System.out.println("Correo enviado a: " + emailCompradorReal);
+                    }
                 } else {
                     liberarNumeros(numeros);
                 }
 
             } catch (Exception e) {
-                System.err.println("❌ Error al procesar el pago: " + e.getMessage());
+                System.err.println("Error al procesar el pago: " + e.getMessage());
             }
         }
     }
@@ -189,7 +237,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
             numero.setPaymentSessionId(null);
         }
         numberRepository.saveAll(numeros);
-        System.out.println("🔁 Números liberados correctamente por pago no aprobado o expiración.");
+        System.out.println("Números liberados correctamente por pago no aprobado o expiración.");
     }
 
 
@@ -227,10 +275,9 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
         if (!vencidos.isEmpty()) {
             numberRepository.saveAll(vencidos);
-            System.out.println("⏰ Reservas expiradas liberadas: " + vencidos.size());
+            System.out.println("Reservas expiradas liberadas: " + vencidos.size());
         }
     }
-
 
 
 }

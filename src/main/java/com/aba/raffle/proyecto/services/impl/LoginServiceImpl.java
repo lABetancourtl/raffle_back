@@ -1,6 +1,7 @@
 package com.aba.raffle.proyecto.services.impl;
 
 import com.aba.raffle.proyecto.dto.LoginDTO;
+import com.aba.raffle.proyecto.dto.TokenAndUserDTO;
 import com.aba.raffle.proyecto.dto.TokenDTO;
 import com.aba.raffle.proyecto.model.entities.User;
 import com.aba.raffle.proyecto.model.entities.UserAdmin;
@@ -46,9 +47,10 @@ public class LoginServiceImpl implements LoginService {
     }
 
     @Override
-    public TokenDTO UserLogin(LoginDTO loginDTO) throws Exception {
+    public TokenAndUserDTO UserLogin(LoginDTO loginDTO) throws Exception {
         User user = userRepository.findByEmail(loginDTO.email())
                 .orElseThrow(() -> new Exception("El usuario no existe"));
+
         if (!user.getEstadoUser().equals(EstadoUser.ACTIVO)) {
             throw new Exception("El usuario esta inactivo");
         }
@@ -62,7 +64,15 @@ public class LoginServiceImpl implements LoginService {
                 "email", user.getEmail(),
                 "estadoUser", user.getEstadoUser().name()
         );
+
         String jwtToken = jwtUtils.generateToken(user.getId().toString(), claims);
-        return new TokenDTO(jwtToken, null);
+
+        return new TokenAndUserDTO(
+                jwtToken,
+                null, // aquí luego puedes meter un refreshToken si lo implementas
+                user.getName(),
+                user.getSurName(),
+                user.getEmail()
+        );
     }
 }

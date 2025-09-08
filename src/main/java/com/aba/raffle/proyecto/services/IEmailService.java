@@ -3,6 +3,7 @@ package com.aba.raffle.proyecto.services;
 
 import jakarta.mail.MessagingException;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -39,6 +40,16 @@ public interface IEmailService {
      * @throws MessagingException If an error occurs while sending the email.
      */
     CompletableFuture<Void> sendEmailCodeRecoveryPassword(String to, String subject, String code, String name);
+
+    CompletableFuture<Void> sendPurchaseConfirmationEmail(
+            String to,
+            String nombre,
+            double monto,
+            String moneda,
+            String metodo,
+            LocalDateTime fecha,
+            List<String> numerosComprados
+    );
 
     /**
      * Generates the HTML content for the admin request confirmation email.
