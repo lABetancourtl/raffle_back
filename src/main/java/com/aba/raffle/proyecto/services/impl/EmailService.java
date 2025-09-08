@@ -270,7 +270,7 @@ public class EmailService implements IEmailService {
     <html>
       <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
         <div style="max-width: 600px; margin:auto; background:white; padding: 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
-          <h2 style="color: #2E7D32; text-align: center;">¡Gracias por tu compra, %s! 🎉</h2>
+          <h2 style="color: #2E7D32; text-align: center;">¡Gracias por tu compra, %s! </h2>
           <p>Hemos recibido tu pago exitosamente. Aquí están los detalles:</p>
 
           <ul style="list-style:none; padding:0;">
@@ -282,7 +282,7 @@ public class EmailService implements IEmailService {
           <h3 style="margin-top:20px;">Tus números comprados:</h3>
           <div style="margin-top:10px;">%s</div>
 
-          <p style="margin-top:20px; color:#555;">Guarda este correo como comprobante de tu compra. ¡Mucha suerte en el sorteo! 🍀</p>
+          <p style="margin-top:20px; color:#555;">Guarda este correo como comprobante de tu compra. ¡Mucha suerte en el sorteo!</p>
           <hr>
           <p style="font-size:12px; color:#999; text-align:center;">Este es un correo automático, por favor no responder.</p>
         </div>
