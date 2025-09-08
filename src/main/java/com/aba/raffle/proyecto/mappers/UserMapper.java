@@ -14,6 +14,7 @@ public interface UserMapper {
     @Mapping(target = "DocNumber", ignore = true)
     @Mapping(target = "dateOfBirth", ignore = true)
     @Mapping(target = "estadoUser", constant = "PENDIENTE_EMAIL")
+    @Mapping(target = "codigoValidacion", ignore = true)
     User fromCreateUserNotValidatedDTO(UserNotValidatedCreateDTO  userNotValidatedCreateDTO); //Convierte UserNotValidatedCreateDTO a User
 
     //    @Mapping(target = "role", constant = "ROLE_ADMIN")

@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -98,6 +99,12 @@ public class UserServiceImpl implements UserService {
         user.setCodigoValidacion(null);
         userRepository.save(user);
     }
+
+    @Override
+    public List<User> obtenerUsuarioEmailVerificado() {
+        return userRepository.findByEstadoUser(EstadoUser.PENDIENTE_VERIFICACION);
+    }
+
 
     //Metodo usado en activarCuenta y cambiarPassword para obtener el usuario por email
     private User obtenerPorEmail(String email) throws Exception{

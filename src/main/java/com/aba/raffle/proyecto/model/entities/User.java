@@ -37,6 +37,7 @@ public class User {
     private CodigoValidacion codigoValidacion;
 
     //Estado de la cuenta
+    @Enumerated(EnumType.STRING)
     private EstadoUser estadoUser;
 
 

@@ -2,12 +2,16 @@ package com.aba.raffle.proyecto.controllers;
 
 
 import com.aba.raffle.proyecto.dto.*;
+import com.aba.raffle.proyecto.model.entities.Raffle;
+import com.aba.raffle.proyecto.model.entities.User;
 import com.aba.raffle.proyecto.services.PurchaseService;
 import com.aba.raffle.proyecto.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -32,9 +36,19 @@ public class AdminController {
         return ResponseEntity.ok(new MensajeDTO<>(false,"Usuario creado correctamente"));
     }
 
+    @GetMapping("/usuarioEmailVerificado")
+    public ResponseEntity<List<User>> usuarioEmailVerificado() {
+        List<User> users = userService.obtenerUsuarioEmailVerificado();
+        if (users.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No hay usuarios con email verificado");
+        }
+        return ResponseEntity.ok(users);
+    }
 
-    @PutMapping("/validarEmail")
+
+    @PatchMapping("/validarEmail")
     public ResponseEntity<MensajeDTO<String>> activarCuenta(@RequestBody ActivarCuentaDTO activarCuentaDTO) throws Exception {
+        System.out.println("Datos que llegan del front " + activarCuentaDTO);
         userService.validarEmail(activarCuentaDTO);
         return ResponseEntity.ok(new MensajeDTO<>(false, "Activado correctamente."));
     }
