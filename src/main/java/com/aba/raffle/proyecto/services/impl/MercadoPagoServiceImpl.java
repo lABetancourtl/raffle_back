@@ -71,7 +71,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 .items(List.of(item))
                 .payer(payer)
                 .externalReference(externalReference)
-                .notificationUrl("https://8ec563bbd755.ngrok-free.app/api/mercadopago/webhook")
+                .notificationUrl(baseUrl+"/api/mercadopago/webhook")
                 .backUrls(PreferenceBackUrlsRequest.builder()
                         .success("https://raffle-back-2.onrender.com/home")
                         .failure("https://raffle-back-2.onrender.com/home")
