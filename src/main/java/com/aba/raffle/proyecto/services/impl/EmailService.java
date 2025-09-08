@@ -10,6 +10,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -91,6 +92,34 @@ public class EmailService implements IEmailService {
             }
         });
     }
+
+    @Override
+    public CompletableFuture<Void> sendPurchaseConfirmationEmail(
+            String to,
+            String nombre,
+            double monto,
+            String moneda,
+            String metodo,
+            LocalDateTime fecha,
+            List<String> numerosComprados
+    ) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                String contentHtml = htmlContentPurchase(nombre, monto, moneda, metodo, fecha, numerosComprados);
+
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                helper.setTo(to);
+                helper.setSubject("🎉 Confirmación de tu compra en RafflePro");
+                helper.setText(contentHtml, true);
+
+                mailSender.send(message);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
 
     @Override
     public CompletableFuture<Void> generateAdminRequestConfirmationEmail(String to, String subject, String name) {
@@ -225,6 +254,42 @@ public class EmailService implements IEmailService {
         """.formatted(codigoActivacion);
     }
 
+    private String htmlContentPurchase(
+            String nombre,
+            double monto,
+            String moneda,
+            String metodo,
+            LocalDateTime fecha,
+            List<String> numeros
+    ) {
+        String numerosHtml = numeros.stream()
+                .map(n -> "<span style='display:inline-block; background:#4CAF50; color:white; padding:6px 12px; margin:4px; border-radius:6px; font-weight:bold;'>" + n + "</span>")
+                .reduce("", (a, b) -> a + b);
+
+        return """
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #f9f9f9; padding: 20px;">
+        <div style="max-width: 600px; margin:auto; background:white; padding: 20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1);">
+          <h2 style="color: #2E7D32; text-align: center;">¡Gracias por tu compra, %s! 🎉</h2>
+          <p>Hemos recibido tu pago exitosamente. Aquí están los detalles:</p>
+
+          <ul style="list-style:none; padding:0;">
+            <li><strong>Monto:</strong> %s %.2f</li>
+            <li><strong>Método de pago:</strong> %s</li>
+            <li><strong>Fecha de aprobación:</strong> %s</li>
+          </ul>
+
+          <h3 style="margin-top:20px;">Tus números comprados:</h3>
+          <div style="margin-top:10px;">%s</div>
+
+          <p style="margin-top:20px; color:#555;">Guarda este correo como comprobante de tu compra. ¡Mucha suerte en el sorteo! 🍀</p>
+          <hr>
+          <p style="font-size:12px; color:#999; text-align:center;">Este es un correo automático, por favor no responder.</p>
+        </div>
+      </body>
+    </html>
+    """.formatted(nombre, moneda, monto, metodo, fecha.toString(), numerosHtml);
+    }
 
 
 

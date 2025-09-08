@@ -2,6 +2,7 @@ package com.aba.raffle.proyecto.controllers;
 
 import com.aba.raffle.proyecto.dto.LoginDTO;
 import com.aba.raffle.proyecto.dto.MensajeDTO;
+import com.aba.raffle.proyecto.dto.TokenAndUserDTO;
 import com.aba.raffle.proyecto.dto.TokenDTO;
 import com.aba.raffle.proyecto.services.impl.LoginServiceImpl;
 import jakarta.validation.Valid;
@@ -24,8 +25,8 @@ public class LoginController {
     }
 
     @PostMapping("/userlogin")
-    public ResponseEntity<MensajeDTO<TokenDTO>> Userlogin(@Valid @RequestBody LoginDTO loginDTO) throws Exception {
-        TokenDTO tokenDTO = loginService.UserLogin(loginDTO);
+    public ResponseEntity<MensajeDTO<TokenAndUserDTO>> Userlogin(@Valid @RequestBody LoginDTO loginDTO) throws Exception {
+        TokenAndUserDTO tokenDTO = loginService.UserLogin(loginDTO);
         return ResponseEntity.ok(new MensajeDTO<>(false, tokenDTO));
     }
 }
