@@ -35,6 +35,10 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
     private final PurchaseService purchaseService;
     private PaymentOperationRepository paymentOperationRepository;
 
+    @Value("${app.base.url}")
+    private String baseUrl;
+
+
     // Inyección por constructor
     public MercadoPagoServiceImpl(NumberRepository numberRepository, PurchaseService purchaseService, PaymentOperationRepository paymentOperationRepository) {
         this.numberRepository = numberRepository;
@@ -61,11 +65,11 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
                 .items(List.of(item))
                 .payer(payer)
                 .externalReference(externalReference)
-                .notificationUrl("https://007f47cd7f22.ngrok-free.app/api/mercadopago/webhook")
+                .notificationUrl(baseUrl + "/api/mercadopago/webhook")
                 .backUrls(PreferenceBackUrlsRequest.builder()
-                        .success("https://www.youtube.com/watch?v=QLfmxIfrd-8/pago-exitoso")
-                        .failure("https://tuapp.com/pago-fallido")
-                        .pending("https://tuapp.com/pago-pendiente")
+                        .success("https://raffle-back-2.onrender.com/home")
+                        .failure("https://raffle-back-2.onrender.com/home")
+                        .pending("https://raffle-back-2.onrender.com/home")
                         .build())
                 .autoReturn("approved")
                 .build();

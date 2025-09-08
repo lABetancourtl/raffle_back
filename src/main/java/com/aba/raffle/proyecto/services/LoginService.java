@@ -6,4 +6,6 @@ import jakarta.validation.Valid;
 
 public interface LoginService {
     TokenDTO login(@Valid LoginDTO loginDTO) throws Exception;
+
+    TokenDTO UserLogin(@Valid LoginDTO loginDTO) throws Exception;
 }

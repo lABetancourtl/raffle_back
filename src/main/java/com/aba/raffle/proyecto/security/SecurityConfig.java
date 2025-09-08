@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/crearUsuarioHome").permitAll() //crear usuario final (home)
                         .requestMatchers("/api/admin/validarEmail").permitAll() //crear usuario final (home)
                         .requestMatchers("/api/admin/usuarioEmailVerificado").permitAll() //ver todos los usuarios ene stado verificado pendiente
+                         .requestMatchers("/api/userlogin").permitAll() //subir imagenes como docfront y docbac
                         .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
                         .requestMatchers("/api/purchase/cantidadNumerosDisponibles").permitAll() //cantidad numeros disponibles al momento de querer hacer el pago
                         .requestMatchers("/api/mercadopago/crear-preferencia").permitAll()

@@ -3,6 +3,7 @@ package com.aba.raffle.proyecto.services.impl;
 import com.aba.raffle.proyecto.dto.ActivarCuentaDTO;
 import com.aba.raffle.proyecto.dto.UserAdminCreateDTO;
 import com.aba.raffle.proyecto.dto.UserNotValidatedCreateDTO;
+import com.aba.raffle.proyecto.dto.UserValidatedCreateDTO;
 import com.aba.raffle.proyecto.mappers.UserAdminMapper;
 import com.aba.raffle.proyecto.mappers.UserMapper;
 import com.aba.raffle.proyecto.model.entities.User;
@@ -42,9 +43,22 @@ public class UserServiceImpl implements UserService {
         UserAdmin userAdmin = userAdminMapper.fromCreateUserDTO(userAdminCreateDTO);
         userAdmin.setPassword(passwordEncoder.encode(userAdmin.getPassword()));
 
-        System.out.println("Datos del usuario a crear:" + userAdmin);
         userAdminRepository.save(userAdmin);
 
+    }
+
+    @Override
+    public void validarDocumento(UserValidatedCreateDTO userValidatedCreateDTO) {
+        User user = userRepository.findByEmail(userValidatedCreateDTO.email())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con el email: " + userValidatedCreateDTO.email()));
+
+        user.setName(userValidatedCreateDTO.name());
+        user.setSurName(userValidatedCreateDTO.surName());
+        user.setDocNumber(userValidatedCreateDTO.DocNumber());
+        user.setDateOfBirth(userValidatedCreateDTO.dateOfBirth());
+        user.setEstadoUser(EstadoUser.ACTIVO);
+
+        userRepository.save(user);
     }
 
     //Metodo para crear usuario final (home)
@@ -85,7 +99,6 @@ public class UserServiceImpl implements UserService {
 
     }
 
-
     @Override
     public void validarEmail(ActivarCuentaDTO activarCuentaDTO) throws Exception  {
         User user = obtenerPorEmail(activarCuentaDTO.email());
@@ -104,6 +117,8 @@ public class UserServiceImpl implements UserService {
     public List<User> obtenerUsuarioEmailVerificado() {
         return userRepository.findByEstadoUser(EstadoUser.PENDIENTE_VERIFICACION);
     }
+
+
 
 
     //Metodo usado en activarCuenta y cambiarPassword para obtener el usuario por email

@@ -2,7 +2,6 @@ package com.aba.raffle.proyecto.controllers;
 
 
 import com.aba.raffle.proyecto.dto.*;
-import com.aba.raffle.proyecto.model.entities.Raffle;
 import com.aba.raffle.proyecto.model.entities.User;
 import com.aba.raffle.proyecto.services.PurchaseService;
 import com.aba.raffle.proyecto.services.UserService;
@@ -45,11 +44,16 @@ public class AdminController {
         return ResponseEntity.ok(users);
     }
 
-
     @PatchMapping("/validarEmail")
-    public ResponseEntity<MensajeDTO<String>> activarCuenta(@RequestBody ActivarCuentaDTO activarCuentaDTO) throws Exception {
+    public ResponseEntity<MensajeDTO<String>> validarEmail(@RequestBody ActivarCuentaDTO activarCuentaDTO) throws Exception {
         System.out.println("Datos que llegan del front " + activarCuentaDTO);
         userService.validarEmail(activarCuentaDTO);
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Activado correctamente."));
+    }
+
+    @PatchMapping("/validarDocumento")
+    public ResponseEntity<MensajeDTO<String>> validarDocumento(@RequestBody UserValidatedCreateDTO userValidatedCreateDTO) throws Exception {
+        userService.validarDocumento(userValidatedCreateDTO);
         return ResponseEntity.ok(new MensajeDTO<>(false, "Activado correctamente."));
     }
 
