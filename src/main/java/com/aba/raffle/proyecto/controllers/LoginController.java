@@ -22,4 +22,10 @@ public class LoginController {
         TokenDTO tokenDTO = loginService.login(loginDTO);
         return ResponseEntity.ok(new MensajeDTO<>(false, tokenDTO));
     }
+
+    @PostMapping("/userlogin")
+    public ResponseEntity<MensajeDTO<TokenDTO>> Userlogin(@Valid @RequestBody LoginDTO loginDTO) throws Exception {
+        TokenDTO tokenDTO = loginService.UserLogin(loginDTO);
+        return ResponseEntity.ok(new MensajeDTO<>(false, tokenDTO));
+    }
 }
