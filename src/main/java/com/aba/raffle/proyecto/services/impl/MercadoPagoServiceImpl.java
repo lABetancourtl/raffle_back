@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 
 @Service
-@RequiredArgsConstructor
+//@RequiredArgsConstructor
 public class MercadoPagoServiceImpl implements MercadoPagoService {
 
 
@@ -46,11 +46,12 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
 
     // Inyección por constructor
-//    public MercadoPagoServiceImpl(NumberRepository numberRepository, PurchaseService purchaseService, PaymentOperationRepository paymentOperationRepository) {
-//        this.numberRepository = numberRepository;
-//        this.purchaseService = purchaseService;
-//        this.paymentOperationRepository = paymentOperationRepository;
-//    }
+    public MercadoPagoServiceImpl(NumberRepository numberRepository, PurchaseService purchaseService, PaymentOperationRepository paymentOperationRepository, EmailService emailService) {
+        this.numberRepository = numberRepository;
+        this.purchaseService = purchaseService;
+        this.paymentOperationRepository = paymentOperationRepository;
+        this.emailService = emailService;
+    }
 
     public Map<String, String> crearPreferenciaPago(String descripcion, int cantidad, double precio, String email, String externalReference) throws Exception {
         MercadoPagoConfig.setAccessToken(accessToken);
