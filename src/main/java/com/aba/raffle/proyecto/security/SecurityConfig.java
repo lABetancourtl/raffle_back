@@ -54,7 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/mercadopago/crear-preferencia").permitAll()
                         .requestMatchers("/api/mercadopago/webhook").permitAll()
                         .requestMatchers("/api/mercadopago/procesar-pago").permitAll()
-                        .requestMatchers("/api/imagenes").permitAll() //subir imagenes como docfront y docback
+                        .requestMatchers("/api/imagenes/varias").permitAll() //subir imagenes como docfront y docback
             //            .requestMatchers("/api/admin/asignarNumero").permitAll() //solo por un momento, luego quitar los permisos
 
                         .anyRequest().authenticated()
