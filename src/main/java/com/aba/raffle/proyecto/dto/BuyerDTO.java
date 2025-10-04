@@ -5,5 +5,6 @@ public record BuyerDTO(
         String email,
         String telefono,
         String pais
+        
 ) {
 }
