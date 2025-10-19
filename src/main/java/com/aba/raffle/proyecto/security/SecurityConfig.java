@@ -51,6 +51,8 @@ public class SecurityConfig {
                          .requestMatchers("/api/userlogin").permitAll() //subir imagenes como docfront y docbac
                         .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
                         .requestMatchers("/api/purchase/cantidadNumerosDisponibles").permitAll() //cantidad numeros disponibles al momento de querer hacer el pago
+                        .requestMatchers("/api/wompi/crear-transaccion").permitAll()
+                        .requestMatchers("/api/wompi/webhook").permitAll()
                         .requestMatchers("/api/mercadopago/crear-preferencia").permitAll()
                         .requestMatchers("/api/mercadopago/webhook").permitAll()
                         .requestMatchers("/api/mercadopago/procesar-pago").permitAll()

@@ -86,7 +86,7 @@ public class MercadoPagoServiceImpl implements MercadoPagoService {
 
         return Map.of(
                 "preferenceId", preference.getId(),
-                "init_point", preference.getSandboxInitPoint()
+                "init_point", preference.getSandboxInitPoint()   //getInitPoint()
         );
     }
 
