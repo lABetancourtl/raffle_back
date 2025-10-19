@@ -21,7 +21,7 @@ public class ImagenController {
 
     private final ImagenService imagenService;
 
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/varias", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> subirImagenes(@RequestParam("imagenes") MultipartFile[] imagenes) throws Exception {
         List<String> urls = new ArrayList<>();
 
@@ -33,6 +33,16 @@ public class ImagenController {
 
         // Devuelve JSON con todas las URLs
         return ResponseEntity.ok(Map.of("urls", urls));
+    }
+
+
+    @PostMapping(path = "/una", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, String>> subirImagen(@RequestParam("imagen") MultipartFile imagen) throws Exception {
+        Map datos = imagenService.subirImagen(imagen);
+        String url = (String) datos.get("secure_url");
+
+        // Devuelve JSON explícito
+        return ResponseEntity.ok(Map.of("url", url));
     }
 
 
