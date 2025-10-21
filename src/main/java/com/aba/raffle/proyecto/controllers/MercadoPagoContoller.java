@@ -1,6 +1,7 @@
 package com.aba.raffle.proyecto.controllers;
 
 
+import com.aba.raffle.proyecto.dto.MensajeDTO;
 import com.aba.raffle.proyecto.dto.PagoRequestDTO;
 import com.aba.raffle.proyecto.services.MercadoPagoService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,15 @@ public class MercadoPagoContoller {
         mercadoPagoService.procesarPago(payload);
         return ResponseEntity.ok("Webhook recibido");
     }
+
+    @PostMapping("/procesar-pago")
+    public ResponseEntity<MensajeDTO<String>> procesarPago(@RequestBody Map<String, Object> datosPago) {
+        // 🔹 Aquí puedes registrar la operación en tu base de datos o reenviar al webhook si quieres
+        System.out.println("Procesando pago manual: " + datosPago);
+
+        return ResponseEntity.ok(new MensajeDTO<>(false, "Pago procesado correctamente"));
+    }
+
 
 
 

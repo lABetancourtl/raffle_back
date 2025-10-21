@@ -18,10 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -231,6 +228,83 @@ public class RaffleServiceImpl implements RaffleService {
         return listaOperationes;
     }
 
+    @Override
+    public List<NumeroDTO> ejecutarSorteo(Long raffleId) {
+        // 1️⃣ Obtener la rifa
+        Raffle raffle = raffleRepository.findById(raffleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
+
+        // 2️⃣ Validar que esté FINALIZADA
+        if (raffle.getStateRaffle() != EstadoRaffle.FINALIZADO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La rifa debe estar finalizada para ejecutar el sorteo");
+        }
+
+        // 3️⃣ Obtener todos los números vendidos
+        List<NumberRaffle> vendidos = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, raffleId);
+        if (vendidos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay boletos vendidos");
+        }
+
+        // 4️⃣ Seleccionar ganador aleatoriamente
+        int totalGanadores = 1; // Puedes parametrizarlo si el front permite varios
+        List<NumeroDTO> ganadores = new ArrayList<>();
+
+        for (int i = 0; i < totalGanadores; i++) {
+            NumberRaffle ganador = vendidos.get((int) (Math.random() * vendidos.size()));
+            String numero = ganador.getNumber().contains("_")
+                    ? ganador.getNumber().split("_")[1]
+                    : ganador.getNumber();
+
+            ganadores.add(new NumeroDTO(numero));
+        }
+
+        // 5️⃣ (Opcional) Podrías guardar el resultado en una tabla "winners" o enviar correo al ganador.
+
+        return ganadores;
+    }
 
 
+
+
+    @Override
+    public List<WinnerDTO> ejecutarSorteo(Long raffleId, int numeroGanadores) {
+        // Verifica que la rifa exista
+        Raffle raffle = raffleRepository.findById(raffleId)
+                .orElseThrow(() -> new RuntimeException("Rifa no encontrada"));
+
+        // Trae todos los boletos VENDIDOS de esa rifa (USANDO numberRepository ✅)
+        List<NumberRaffle> vendidos =
+                numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, raffleId);
+
+        if (vendidos == null || vendidos.isEmpty()) {
+            throw new RuntimeException("No hay boletos vendidos para esta rifa");
+        }
+
+        // Mezcla aleatoriamente y toma la cantidad solicitada
+        Collections.shuffle(vendidos);
+        List<NumberRaffle> seleccionados = vendidos.stream()
+                .limit(Math.max(1, numeroGanadores))
+                .collect(Collectors.toList());
+
+        // Mapea a DTO para el front (usando campos reales de Buyer)
+        List<WinnerDTO> ganadores = seleccionados.stream()
+                .map(n -> {
+                    String numeroCompleto = n.getNumber();                 // ej: "15_0023"
+                    String soloNumero = numeroCompleto.contains("_")
+                            ? numeroCompleto.split("_")[1]
+                            : numeroCompleto;
+
+                    Buyer b = n.getBuyer();
+                    return new WinnerDTO(
+                            soloNumero,                     // numero sin prefijo
+                            b != null ? b.getName() : "",
+                            b != null ? b.getApellido() : "",
+                            b != null ? b.getEmail() : "",
+                            b != null ? b.getPhone() : ""
+                    );
+                })
+                .collect(Collectors.toList());
+
+        return ganadores;
+    }
 }

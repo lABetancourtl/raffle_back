@@ -27,4 +27,6 @@ public interface RaffleService {
     List<NumeroDTO> obtenerSoloNumerosPorEmail(String email);
 
     List<PaymentOperationDTO> getOperacionesByRaffle(String raffleId);
+    public List<NumeroDTO> ejecutarSorteo(Long raffleId);
+    public List<WinnerDTO> ejecutarSorteo(Long raffleId, int numeroGanadores);
 }

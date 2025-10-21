@@ -77,11 +77,14 @@ public class AdminController {
 
 
     @PostMapping("/asignarNumero")
-    public ResponseEntity<MensajeDTO<NumeroDTO>> asignarNumero(@Valid @RequestBody BuyRequestDTO buyRequestDTO, NumeroDTO numeroDTO) {
-        System.out.println("Numero que llega: " + numeroDTO);
-        NumeroDTO numeroAsignado = purchaseService.asignarNumeroDesdeAdmin(buyRequestDTO, numeroDTO);
-        return ResponseEntity.ok(new MensajeDTO<>(false,  numeroAsignado));
+    public ResponseEntity<MensajeDTO<NumeroDTO>> asignarNumero(@RequestBody AsignacionManualDTO request) {
+        NumeroDTO numeroAsignado = purchaseService.asignarNumeroDesdeAdmin(
+                request.data(),
+                request.numeroManual()
+        );
+        return ResponseEntity.ok(new MensajeDTO<>(false, numeroAsignado));
     }
+
 
 
 

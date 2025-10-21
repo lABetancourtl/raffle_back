@@ -110,6 +110,23 @@ public class RaffleController {
         return ResponseEntity.ok(operaciones);
     }
 
+    @PostMapping("/ejecutarSorteo/{raffleId}")
+    public ResponseEntity<MensajeDTO<List<WinnerDTO>>> ejecutarSorteo(
+            @PathVariable Long raffleId,
+            @RequestParam(defaultValue = "1") int numeroGanadores) {
+
+        try {
+            List<WinnerDTO> ganadores = raffleService.ejecutarSorteo(raffleId, numeroGanadores);
+            return ResponseEntity.ok(new MensajeDTO<>(false, ganadores));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new MensajeDTO<>(true, List.of()));
+        }
+    }
+
+
+
 
 
 }
