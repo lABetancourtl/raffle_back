@@ -30,6 +30,8 @@ repositories {
 extra["snippetsDir"] = file("build/generated-snippets")
 
 dependencies {
+
+    implementation("com.github.librepdf:openpdf:1.3.30")
     // =============================================
     // SPRING BOOT STARTERS (Funcionalidades base)
     // =============================================
