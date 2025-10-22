@@ -12,8 +12,12 @@ import com.aba.raffle.proyecto.repositories.UserRepository;
 import com.aba.raffle.proyecto.security.JWTUtils;
 import com.aba.raffle.proyecto.services.LoginService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
@@ -24,6 +28,9 @@ public class LoginServiceImpl implements LoginService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JWTUtils jwtUtils;
+
+    @Value("${turnstile.secret}")
+    private String turnstileSecret;
 
     @Override
     public TokenDTO login(LoginDTO loginDTO) throws Exception {
@@ -48,6 +55,12 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public TokenAndUserDTO UserLogin(LoginDTO loginDTO) throws Exception {
+      // validar turnstile
+        if (!validateTurnstile(loginDTO.token())) {
+            throw new Exception("Verificación humana fallida");
+        }
+
+        // 2️⃣ Validar email y contraseña como antes
         User user = userRepository.findByEmail(loginDTO.email())
                 .orElseThrow(() -> new Exception("El usuario no existe"));
 
@@ -69,10 +82,30 @@ public class LoginServiceImpl implements LoginService {
 
         return new TokenAndUserDTO(
                 jwtToken,
-                null, // aquí luego puedes meter un refreshToken si lo implementas
+                null, // refreshToken
                 user.getName(),
                 user.getSurName(),
                 user.getEmail()
         );
     }
+
+    private boolean validateTurnstile(String token) {
+        String secretKey = turnstileSecret;
+        String url = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+
+        RestTemplate restTemplate = new RestTemplate();
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("secret", secretKey);
+        params.add("response", token);
+
+        try {
+            Map<String, Object> response = restTemplate.postForObject(url, params, Map.class);
+            return response != null && Boolean.TRUE.equals(response.get("success"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+
 }

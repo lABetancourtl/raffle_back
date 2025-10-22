@@ -7,4 +7,6 @@ import java.util.Map;
 public interface WompiService {
 
     Map<String, String> iniciarProcesoDePagoConWompi(PagoRequestDTO datosPago) throws Exception;
+
+    void procesarPago(Map<String, Object> payload);
 }
