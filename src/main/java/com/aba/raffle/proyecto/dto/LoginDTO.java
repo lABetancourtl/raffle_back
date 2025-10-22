@@ -9,6 +9,8 @@ public record LoginDTO(
         String email,
 
         @NotBlank(message = "La contraseña es obligatoria")
-        String password
+        String password,
+
+        String token
 ) {
 }

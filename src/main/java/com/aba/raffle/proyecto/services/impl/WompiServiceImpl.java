@@ -31,10 +31,7 @@ public class WompiServiceImpl implements WompiService {
     @Value("${wompi.integrity.secret}")
     private String integritySecret;
 
-    public WompiServiceImpl(PurchaseService purchaseService,
-                            NumberRepository numberRepository,
-                            PaymentOperationRepository paymentOperationRepository,
-                            EmailService emailService) {
+    public WompiServiceImpl(PurchaseService purchaseService, NumberRepository numberRepository, PaymentOperationRepository paymentOperationRepository, EmailService emailService) {
         this.purchaseService = purchaseService;
         this.numberRepository = numberRepository;
         this.paymentOperationRepository = paymentOperationRepository;
@@ -88,8 +85,8 @@ public class WompiServiceImpl implements WompiService {
             String currency = (String) transaction.get("currency");
             Integer amountInCents = (Integer) transaction.get("amount_in_cents");
             double monto = amountInCents / 100.0;
-
             String metodo = (String) transaction.get("payment_method_type");
+            String emailWompi = (String) transaction.get("customer_email");
             LocalDateTime fecha = LocalDateTime.now();
 
             // Buscar números reservados
@@ -103,6 +100,7 @@ public class WompiServiceImpl implements WompiService {
             op.setMetodoPago(metodo);
             op.setFechaPago(fecha);
             op.setExternalReference(reference);
+            op.setCompradorEmail(emailWompi);
             op.setRawPayload(payload.toString());
             op.setRegistradoEn(LocalDateTime.now());
 
@@ -116,7 +114,6 @@ public class WompiServiceImpl implements WompiService {
             LocalDateTime reservedAt = primerNumero.getReservedAt();
 
             if (reservedAt == null || reservedAt.isBefore(LocalDateTime.now().minusMinutes(10))) {
-                // Expiró la reserva
                 op.setExpirada(true);
                 liberarNumeros(numeros);
                 paymentOperationRepository.save(op);
@@ -128,6 +125,16 @@ public class WompiServiceImpl implements WompiService {
             op.setCantidadNumeros(numeros.size());
             op.setNumerosComprados(numeros.stream().map(NumberRaffle::getNumber).toList());
 
+            // ✅ Email real del comprador
+            String emailReal = emailWompi;
+            if (primerNumero.getBuyer() != null) {
+                emailReal = primerNumero.getBuyer().getEmail();
+                op.setCompradorNombre(primerNumero.getBuyer().getName());
+                op.setCompradorApellido(primerNumero.getBuyer().getApellido());
+                op.setCompradorPais(primerNumero.getBuyer().getPais());
+                op.setCompradorTelefono(primerNumero.getBuyer().getPhone());
+            }
+
             if ("APPROVED".equalsIgnoreCase(status)) {
                 for (NumberRaffle numero : numeros) {
                     numero.setStateNumber(EstadoNumber.VENDIDO);
@@ -136,17 +143,16 @@ public class WompiServiceImpl implements WompiService {
                 numberRepository.saveAll(numeros);
 
                 // Enviar correo al comprador
-                if (primerNumero.getBuyer() != null) {
-                    emailService.sendPurchaseConfirmationEmail(
-                            primerNumero.getBuyer().getEmail(),
-                            primerNumero.getBuyer().getName(),
-                            monto,
-                            currency,
-                            metodo,
-                            fecha,
-                            numeros.stream().map(NumberRaffle::getNumber).toList()
-                    );
-                }
+                emailService.sendPurchaseConfirmationEmail(
+                        emailReal,
+                        primerNumero.getBuyer() != null ? primerNumero.getBuyer().getName() : "Cliente",
+                        monto,
+                        currency,
+                        metodo,
+                        fecha,
+                        numeros.stream().map(NumberRaffle::getNumber).toList()
+                );
+
             } else {
                 liberarNumeros(numeros);
             }
@@ -157,6 +163,7 @@ public class WompiServiceImpl implements WompiService {
             System.err.println("Error al procesar pago de Wompi: " + e.getMessage());
         }
     }
+
 
     private void liberarNumeros(List<NumberRaffle> numeros) {
         for (NumberRaffle numero : numeros) {

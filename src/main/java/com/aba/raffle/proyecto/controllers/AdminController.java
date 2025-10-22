@@ -75,7 +75,6 @@ public class AdminController {
         return ResponseEntity.ok(new MensajeDTO<>(false,  randomNumbers));
     }
 
-
     @PostMapping("/asignarNumero")
     public ResponseEntity<MensajeDTO<NumeroDTO>> asignarNumero(@RequestBody AsignacionManualDTO request) {
         NumeroDTO numeroAsignado = purchaseService.asignarNumeroDesdeAdmin(

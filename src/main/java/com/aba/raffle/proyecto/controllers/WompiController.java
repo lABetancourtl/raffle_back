@@ -25,10 +25,11 @@ public class WompiController {
     }
 
 
+
+
     @PostMapping("/webhook")
     public ResponseEntity<String> recibirWebhook(@RequestBody Map<String, Object> payload) {
-        System.out.println("Webhook de Wompi recibido: " + payload);
-        // Aquí guardas/actualizas el estado de la transacción en tu BD
-        return ResponseEntity.ok("OK");
+        wompiService.procesarPago(payload);
+        return ResponseEntity.ok("Webhook recibido");
     }
 }
