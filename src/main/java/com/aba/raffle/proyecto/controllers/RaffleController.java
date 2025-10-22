@@ -4,10 +4,14 @@ package com.aba.raffle.proyecto.controllers;
 import com.aba.raffle.proyecto.dto.*;
 import com.aba.raffle.proyecto.model.entities.NumberRaffle;
 import com.aba.raffle.proyecto.model.entities.Raffle;
+import com.aba.raffle.proyecto.model.entities.SorteoActa;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
+import com.aba.raffle.proyecto.repositories.SorteoActaRepository;
+import com.aba.raffle.proyecto.services.PdfService;
 import com.aba.raffle.proyecto.services.RaffleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -111,19 +115,44 @@ public class RaffleController {
     }
 
     @PostMapping("/ejecutarSorteo/{raffleId}")
-    public ResponseEntity<MensajeDTO<List<WinnerDTO>>> ejecutarSorteo(
+    public ResponseEntity<MensajeDTO<ResultadoSorteoDTO>> ejecutarSorteo(
             @PathVariable Long raffleId,
             @RequestParam(defaultValue = "1") int numeroGanadores) {
 
         try {
-            List<WinnerDTO> ganadores = raffleService.ejecutarSorteo(raffleId, numeroGanadores);
-            return ResponseEntity.ok(new MensajeDTO<>(false, ganadores));
+            ResultadoSorteoDTO resultado = raffleService.ejecutarSorteo(raffleId, numeroGanadores);
+            return ResponseEntity.ok(new MensajeDTO<>(false, resultado));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MensajeDTO<>(true, List.of()));
+                    .body(new MensajeDTO<>(true, null));
         }
     }
+
+
+    @Autowired
+    private PdfService pdfService;
+    @Autowired
+    private SorteoActaRepository sorteoActaRepository;
+
+    @GetMapping("/acta/{sorteoId}/pdf")
+    public ResponseEntity<byte[]> descargarActa(@PathVariable Long sorteoId) throws Exception {
+        SorteoActa acta = sorteoActaRepository.findById(sorteoId)
+                .orElseThrow(() -> new RuntimeException("Acta no encontrada"));
+
+        // En un caso real deberías recuperar los ganadores asociados
+        List<WinnerDTO> ganadores = acta.getNumerosGanadores().stream()
+                .map(n -> new WinnerDTO(n, "", "", "", ""))
+                .toList();
+
+        byte[] pdf = pdfService.generarActaPdf(acta, ganadores);
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition", "attachment; filename=ActaSorteo_" + sorteoId + ".pdf")
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .body(pdf);
+    }
+
 
 
 

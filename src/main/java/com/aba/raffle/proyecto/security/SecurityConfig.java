@@ -47,8 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/admin/crearUsuario").permitAll() //crear usuario publico solo por pruebas
                         .requestMatchers("/api/admin/crearUsuarioHome").permitAll() //crear usuario final (home)
                         .requestMatchers("/api/admin/validarEmail").permitAll() //crear usuario final (home)
-                        .requestMatchers("/api/admin/usuarioEmailVerificado").permitAll() //ver todos los usuarios ene stado verificado pendiente
-                         .requestMatchers("/api/userlogin").permitAll() //subir imagenes como docfront y docbac
+                        .requestMatchers("/api/admin/usuarioEmailVerificado").permitAll() //ver todos los usuarios en estado verificado pendiente
+                        .requestMatchers("/api/userlogin").permitAll() //login usuario
                         .requestMatchers("/api/raffle/activa").permitAll() //busca la rifa activa
                         .requestMatchers("/api/purchase/cantidadNumerosDisponibles").permitAll() //cantidad numeros disponibles al momento de querer hacer el pago
                         .requestMatchers("/api/wompi/crear-transaccion").permitAll()
@@ -56,8 +56,13 @@ public class SecurityConfig {
                         .requestMatchers("/api/mercadopago/crear-preferencia").permitAll()
                         .requestMatchers("/api/mercadopago/webhook").permitAll()
                         .requestMatchers("/api/mercadopago/procesar-pago").permitAll()
-                        .requestMatchers("/api/imagenes/varias").permitAll() //subir imagenes como docfront y docback
-            //            .requestMatchers("/api/admin/asignarNumero").permitAll() //solo por un momento, luego quitar los permisos
+                        .requestMatchers("/api/imagenes/varias").permitAll()
+
+                        // ✅ Permitir la descarga del acta y ejecución del sorteo sin token
+                        .requestMatchers("/api/raffle/acta/**").permitAll()
+                        .requestMatchers("/api/raffle/ejecutarSorteo/**").permitAll()
+
+                        // .requestMatchers("/api/admin/asignarNumero").permitAll() //solo por un momento, luego quitar los permisos
 
                         .anyRequest().authenticated()
                 )
@@ -70,7 +75,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*")); // Si usas Angular // Origen FRONT
+        config.setAllowedOriginPatterns(List.of("*")); // Si usas Angular
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

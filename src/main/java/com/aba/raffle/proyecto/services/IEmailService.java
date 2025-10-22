@@ -67,4 +67,12 @@ public interface IEmailService {
      * //@param imageUrl The URL of the image to include in the email.
      */
     CompletableFuture<Void> generateAdminRequestDecisionEmail(String to, String subject,String name, boolean isAccepted);
+    public CompletableFuture<Void> sendWinnerNotificationEmail(String to,
+                                                               String nombre,
+                                                               String apellido,
+                                                               String numeroGanador,
+                                                               String nombreRifa,
+                                                               LocalDateTime fechaSorteo,
+                                                               String semilla,
+                                                               String hashVerificacion);
 }
