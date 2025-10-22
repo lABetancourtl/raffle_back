@@ -299,6 +299,71 @@ public class EmailService implements IEmailService {
     """.formatted(nombre, moneda, monto, metodo, fecha.toString(), numerosHtml);
     }
 
+    @Override
+    public CompletableFuture<Void> sendWinnerNotificationEmail(
+            String to,
+            String nombre,
+            String apellido,
+            String numeroGanador,
+            String nombreRifa,
+            LocalDateTime fechaSorteo,
+            String semilla,
+            String hashVerificacion
+    ) {
+        return CompletableFuture.runAsync(() -> {
+            try {
+                String contentHtml = htmlContentWinner(nombre, apellido, numeroGanador, nombreRifa, fechaSorteo, semilla, hashVerificacion);
+
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+                helper.setTo(to);
+                helper.setSubject("🎉 ¡Felicidades, " + nombre + "! Has ganado en la rifa " + nombreRifa);
+                helper.setText(contentHtml, true);
+
+                mailSender.send(message);
+            } catch (MessagingException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private String htmlContentWinner(
+            String nombre,
+            String apellido,
+            String numero,
+            String nombreRifa,
+            LocalDateTime fecha,
+            String semilla,
+            String hash
+    ) {
+        return """
+    <html>
+      <body style="font-family: Arial, sans-serif; background-color: #f7f7f7; padding: 20px;">
+        <div style="max-width: 600px; margin:auto; background:white; padding: 30px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+          <h2 style="color: #2E7D32; text-align: center;">🎉 ¡Felicidades, %s %s! 🎉</h2>
+          <p style="font-size: 16px; color: #444;">Has sido seleccionado como <strong>ganador</strong> en la rifa <b>%s</b>.</p>
+
+          <div style="background-color:#E8F5E9; padding: 15px; border-radius:8px; margin-top:15px; text-align:center;">
+            <p style="font-size:18px; color:#2E7D32; margin:0;">Número ganador:</p>
+            <h1 style="color:#1B5E20; margin:10px 0;">%s</h1>
+          </div>
+
+          <p style="margin-top:20px;">Fecha del sorteo: <strong>%s</strong></p>
+          <p>Semilla de sorteo: <code>%s</code></p>
+          <p>Hash de verificación: <code>%s</code></p>
+
+          <hr style="margin:30px 0;">
+          <p style="font-size: 14px; color:#666; text-align:center;">
+            Gracias por participar en <b>RafflePro</b>. ¡Te esperamos en las próximas rifas!
+          </p>
+        </div>
+      </body>
+    </html>
+    """.formatted(nombre, apellido, nombreRifa, numero, fecha, semilla, hash);
+    }
+
+
+
 
 
 }

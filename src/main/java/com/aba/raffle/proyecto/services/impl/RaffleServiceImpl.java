@@ -3,25 +3,23 @@ package com.aba.raffle.proyecto.services.impl;
 import com.aba.raffle.proyecto.dto.*;
 import com.aba.raffle.proyecto.mappers.PaymentOperationMapper;
 import com.aba.raffle.proyecto.mappers.RaffleMapper;
-import com.aba.raffle.proyecto.model.entities.NumberRaffle;
-import com.aba.raffle.proyecto.model.entities.PaymentOperation;
-import com.aba.raffle.proyecto.model.entities.Raffle;
+import com.aba.raffle.proyecto.model.entities.*;
 import com.aba.raffle.proyecto.model.enums.EstadoNumber;
 import com.aba.raffle.proyecto.model.enums.EstadoRaffle;
 import com.aba.raffle.proyecto.model.vo.Buyer;
 import com.aba.raffle.proyecto.repositories.NumberRepository;
 import com.aba.raffle.proyecto.repositories.PaymentOperationRepository;
 import com.aba.raffle.proyecto.repositories.RaffleRepository;
+import com.aba.raffle.proyecto.repositories.SorteoActaRepository;
 import com.aba.raffle.proyecto.services.RaffleService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -230,6 +228,138 @@ public class RaffleServiceImpl implements RaffleService {
         List<PaymentOperationDTO> listaOperationes = paymentOperationMapper.toDtoList(operaciones);
         return listaOperationes;
     }
+
+    @Override
+    public List<NumeroDTO> ejecutarSorteo(Long raffleId) {
+        // 1️⃣ Obtener la rifa
+        Raffle raffle = raffleRepository.findById(raffleId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Rifa no encontrada"));
+
+        // 2️⃣ Validar que esté FINALIZADA
+        if (raffle.getStateRaffle() != EstadoRaffle.FINALIZADO) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La rifa debe estar finalizada para ejecutar el sorteo");
+        }
+
+        // 3️⃣ Obtener todos los números vendidos
+        List<NumberRaffle> vendidos = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, raffleId);
+        if (vendidos.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No hay boletos vendidos");
+        }
+
+        // 4️⃣ Seleccionar ganador aleatoriamente
+        int totalGanadores = 1; // Puedes parametrizarlo si el front permite varios
+        List<NumeroDTO> ganadores = new ArrayList<>();
+
+        for (int i = 0; i < totalGanadores; i++) {
+            NumberRaffle ganador = vendidos.get((int) (Math.random() * vendidos.size()));
+            String numero = ganador.getNumber().contains("_")
+                    ? ganador.getNumber().split("_")[1]
+                    : ganador.getNumber();
+
+            ganadores.add(new NumeroDTO(numero));
+        }
+
+        // 5️⃣ (Opcional) Podrías guardar el resultado en una tabla "winners" o enviar correo al ganador.
+
+        return ganadores;
+    }
+
+
+
+    @Autowired
+    private SorteoActaRepository sorteoActaRepository;
+    @Autowired
+    private EmailService emailService;
+
+    @Override
+    public ResultadoSorteoDTO ejecutarSorteo(Long raffleId, int numeroGanadores) throws Exception {
+        // 1️⃣ Verifica que la rifa exista
+        Raffle raffle = raffleRepository.findById(raffleId)
+                .orElseThrow(() -> new RuntimeException("Rifa no encontrada"));
+
+        // 2️⃣ Obtiene los boletos vendidos
+        List<NumberRaffle> vendidos = numberRepository.findByStateNumberAndRaffleId(EstadoNumber.VENDIDO, raffleId);
+        if (vendidos == null || vendidos.isEmpty()) {
+            throw new RuntimeException("No hay boletos vendidos para esta rifa");
+        }
+
+        // 3️⃣ Selecciona ganadores aleatorios
+        Collections.shuffle(vendidos);
+        List<NumberRaffle> seleccionados = vendidos.stream()
+                .limit(Math.max(1, numeroGanadores))
+                .collect(Collectors.toList());
+
+        // 4️⃣ Mapea ganadores a DTO
+        List<WinnerDTO> ganadores = seleccionados.stream()
+                .map(n -> {
+                    String numero = n.getNumber().contains("_") ? n.getNumber().split("_")[1] : n.getNumber();
+                    Buyer b = n.getBuyer();
+                    return new WinnerDTO(
+                            numero,
+                            b != null ? b.getName() : "",
+                            b != null ? b.getApellido() : "",
+                            b != null ? b.getEmail() : "",
+                            b != null ? b.getPhone() : ""
+                    );
+                })
+                .collect(Collectors.toList());
+
+        // 5️⃣ Convierte los DTO a objetos embebidos para guardar en la BD
+        List<WinnerEmbeddable> ganadoresEmbeddable = ganadores.stream()
+                .map(w -> new WinnerEmbeddable(
+                        w.getNumero(),
+                        w.getNombre(),
+                        w.getApellido(),
+                        w.getEmail(),
+                        w.getTelefono()
+                ))
+                .collect(Collectors.toList());
+
+        // 6️⃣ Genera datos del acta
+        String semilla = "RNG-" + Math.random();
+        String hash = "SHA256-" + java.util.UUID.randomUUID();
+
+        SorteoActa acta = SorteoActa.builder()
+                .raffleId(raffleId)
+                .fechaEjecucion(LocalDateTime.now())
+                .semilla(semilla)
+                .hashGenerado(hash)
+                .ganadores(ganadoresEmbeddable) // ✅ ahora guarda todos los datos
+                .build();
+
+        SorteoActa actaGuardada = sorteoActaRepository.save(acta); // 💾 Guarda y obtiene el ID generado
+        for (WinnerDTO g : ganadores) {
+            if (g.getEmail() != null && !g.getEmail().isBlank()) {
+                emailService.sendWinnerNotificationEmail(
+                        g.getEmail(),
+                        g.getNombre(),
+                        g.getApellido(),
+                        g.getNumero(),
+                        "Rifa #" + raffleId,
+                        actaGuardada.getFechaEjecucion(),
+                        actaGuardada.getSemilla(),
+                        actaGuardada.getHashGenerado()
+                );
+            }
+        }
+
+        // 7️⃣ Retorna DTO con toda la información para el front
+        return new ResultadoSorteoDTO(
+                ganadores,
+                actaGuardada.getId(),  // ID real en BD
+                semilla,
+                hash
+        );
+
+
+
+    }
+
+
+
+
+
+
 
 
 
