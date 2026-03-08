@@ -140,7 +140,6 @@ public class RaffleController {
         SorteoActa acta = sorteoActaRepository.findById(sorteoId)
                 .orElseThrow(() -> new RuntimeException("Acta no encontrada"));
 
-        // En un caso real deberías recuperar los ganadores asociados
         List<WinnerDTO> ganadores = acta.getNumerosGanadores().stream()
                 .map(n -> new WinnerDTO(n, "", "", "", ""))
                 .toList();

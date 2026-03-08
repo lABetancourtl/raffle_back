@@ -1,17 +1,14 @@
-#
-# Build stage
-#
-FROM gradle:8.10-jdk21 AS build
-WORKDIR /home/gradle/src
-COPY . .
-RUN chmod +x ./gradlew
-RUN ./gradlew clean bootJar --no-daemon
+# Usar imagen base de Java
+FROM eclipse-temurin:21-jdk-jammy
 
-#
-# Package stage
-#
-FROM openjdk:21
-ARG JAR_FILE=/home/gradle/src/build/libs/*.jar
-COPY --from=build ${JAR_FILE} app.jar
-EXPOSE ${PORT}
-ENTRYPOINT ["java","-jar","/app.jar","--server.port=${PORT}"]
+# Establecer directorio de trabajo
+WORKDIR /app
+
+# Copiar el jar compilado
+COPY build/libs/*.jar app.jar
+
+# Exponer el puerto (cambia 8080 si tu app usa otro)
+EXPOSE 8080
+
+# Comando para ejecutar la aplicación
+ENTRYPOINT ["java", "-jar", "app.jar"]

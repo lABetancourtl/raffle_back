@@ -18,6 +18,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.Comparator;
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -283,13 +289,61 @@ public class RaffleServiceImpl implements RaffleService {
             throw new RuntimeException("No hay boletos vendidos para esta rifa");
         }
 
-        // 3️⃣ Selecciona ganadores aleatorios
-        Collections.shuffle(vendidos);
-        List<NumberRaffle> seleccionados = vendidos.stream()
+        // Construir lista de strings representando los números vendidos (por ejemplo "0001", "A_23"... según tu formato)
+        List<String> allNumbers = vendidos.stream()
+                .map(NumberRaffle::getNumber)
+                .map(n -> n.contains("_") ? n.split("_")[1] : n)
+                .sorted(Comparator.naturalOrder())
+                .collect(Collectors.toList());
+
+        // 3️⃣ Genera semilla segura y hash de integridad (semilla + raffleId + lista de números)
+        SecureRandom sr = new SecureRandom();
+        byte[] seedBytes = new byte[24];
+        sr.nextBytes(seedBytes);
+        String semilla = "RNG-" + Base64.getUrlEncoder().withoutPadding().encodeToString(seedBytes);
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(semilla).append("|").append(raffleId).append("|");
+        // concatenamos todos los números con separador (determinístico)
+        for (String n : allNumbers) {
+            sb.append(n).append(",");
+        }
+        String contenidoHash = sb.toString();
+
+        // calcular SHA-256
+        String hash;
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashed = digest.digest(contenidoHash.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            hash = "SHA256-" + Base64.getUrlEncoder().withoutPadding().encodeToString(hashed);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("Error generando hash", e);
+        }
+
+        // 4️⃣ Selecciona ganadores de forma determinista usando la semilla (mezcla determinística)
+        // -> Si queremos reproducibilidad: hacemos un shuffle basado en SecureRandom con semilla derivada.
+        // Derivamos un número largo de la semilla para inicializar Random
+        long derivedSeed = 0L;
+        byte[] seedForLong = java.util.Arrays.copyOf(seedBytes, 8);
+        for (int i = 0; i < seedForLong.length; i++) {
+            derivedSeed = (derivedSeed << 8) | (seedForLong[i] & 0xff);
+        }
+        java.util.Random deterministicRandom = new java.util.Random(derivedSeed);
+
+        List<NumberRaffle> copyVendidos = new java.util.ArrayList<>(vendidos);
+        // Fisher-Yates shuffle usando deterministicRandom
+        for (int i = copyVendidos.size() - 1; i > 0; i--) {
+            int j = deterministicRandom.nextInt(i + 1);
+            NumberRaffle tmp = copyVendidos.get(i);
+            copyVendidos.set(i, copyVendidos.get(j));
+            copyVendidos.set(j, tmp);
+        }
+
+        List<NumberRaffle> seleccionados = copyVendidos.stream()
                 .limit(Math.max(1, numeroGanadores))
                 .collect(Collectors.toList());
 
-        // 4️⃣ Mapea ganadores a DTO
+        // 5️⃣ Mapea ganadores a DTO
         List<WinnerDTO> ganadores = seleccionados.stream()
                 .map(n -> {
                     String numero = n.getNumber().contains("_") ? n.getNumber().split("_")[1] : n.getNumber();
@@ -304,7 +358,7 @@ public class RaffleServiceImpl implements RaffleService {
                 })
                 .collect(Collectors.toList());
 
-        // 5️⃣ Convierte los DTO a objetos embebidos para guardar en la BD
+        // 6️⃣ Convierte los DTO a objetos embebidos para guardar en la BD
         List<WinnerEmbeddable> ganadoresEmbeddable = ganadores.stream()
                 .map(w -> new WinnerEmbeddable(
                         w.getNumero(),
@@ -315,19 +369,18 @@ public class RaffleServiceImpl implements RaffleService {
                 ))
                 .collect(Collectors.toList());
 
-        // 6️⃣ Genera datos del acta
-        String semilla = "RNG-" + Math.random();
-        String hash = "SHA256-" + java.util.UUID.randomUUID();
-
+        // 7️⃣ Guarda acta con semilla y hash
         SorteoActa acta = SorteoActa.builder()
                 .raffleId(raffleId)
                 .fechaEjecucion(LocalDateTime.now())
                 .semilla(semilla)
                 .hashGenerado(hash)
-                .ganadores(ganadoresEmbeddable) // ✅ ahora guarda todos los datos
+                .ganadores(ganadoresEmbeddable)
                 .build();
 
-        SorteoActa actaGuardada = sorteoActaRepository.save(acta); // 💾 Guarda y obtiene el ID generado
+        SorteoActa actaGuardada = sorteoActaRepository.save(acta);
+
+        // 8️⃣ Notificar ganadores (si aplica)
         for (WinnerDTO g : ganadores) {
             if (g.getEmail() != null && !g.getEmail().isBlank()) {
                 emailService.sendWinnerNotificationEmail(
@@ -343,19 +396,15 @@ public class RaffleServiceImpl implements RaffleService {
             }
         }
 
-        // 7️⃣ Retorna DTO con toda la información para el front
+        // 9️⃣ Retorna DTO con toda la información para el front (incluye allNumbers)
         return new ResultadoSorteoDTO(
                 ganadores,
-                actaGuardada.getId(),  // ID real en BD
+                actaGuardada.getId(),
                 semilla,
-                hash
+                hash,
+                allNumbers
         );
-
-
-
     }
-
-
 
 
 

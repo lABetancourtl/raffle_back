@@ -14,4 +14,5 @@ public class ResultadoSorteoDTO {
     private Long actaId;               // ID del acta en BD
     private String semilla;            // Semilla usada para el sorteo
     private String hash;               // Hash generado (para verificación)
+    private List<String> allNumbers;
 }
